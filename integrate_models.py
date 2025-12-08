@@ -152,7 +152,7 @@ def install_llama_cpp_python():
             print(f"   ❌ Installation failed: {result.stderr}")
             return False
     except subprocess.TimeoutExpired:
-        print("   ❌ Installation timed out (>10 minutes)")
+        print("   ❌ Installation timed out (>10 minutes) - compilation may need more time")
         return False
     except Exception as e:
         print(f"   ❌ Installation error: {str(e)}")
@@ -675,7 +675,8 @@ def auto_integrate_models(use_lite=False):
         with open(req_file, 'r') as f:
             reqs = f.read()
         
-        if 'llama-cpp-python' not in reqs:
+        # Check if llama-cpp-python exists (with or without version)
+        if not any(line.strip().startswith('llama-cpp-python') for line in reqs.split('\n')):
             with open(req_file, 'a') as f:
                 f.write('\nllama-cpp-python==0.2.20\n')
             print("   ✅ Added llama-cpp-python to requirements.txt")
