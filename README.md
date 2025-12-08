@@ -58,6 +58,21 @@ docker-compose exec web flask create-admin
 # Access at http://localhost:5000
 ```
 
+### Using Docker on MacBook M4 (Apple Silicon)
+
+```bash
+# Use M4-optimized configuration
+docker-compose -f docker-compose.m4.yml up -d
+
+# Initialize database
+docker-compose -f docker-compose.m4.yml exec web flask db upgrade
+
+# Create admin user
+docker-compose -f docker-compose.m4.yml exec web flask create-admin
+
+# See full M4 setup guide: docs/SETUP_M4.md
+```
+
 ### Local Development
 
 ```bash
@@ -91,6 +106,7 @@ python run.py
 ## Documentation
 
 - [Installation Guide](docs/INSTALL.md) - Detailed installation instructions
+- [MacBook M4 Setup](docs/SETUP_M4.md) - Optimized setup for Apple Silicon (NEW)
 - [Model Download Guide](docs/MODELS.md) - How to download and configure AI models
 - [Deployment Guide](docs/DEPLOY.md) - Production deployment on Ubuntu
 - [API Documentation](docs/API.md) - REST API reference

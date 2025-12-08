@@ -1,5 +1,5 @@
 """Main blueprint."""
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, jsonify
 from flask_login import current_user
 
 main_bp = Blueprint('main', __name__)
@@ -29,3 +29,13 @@ def faq():
 def pricing():
     """Pricing page."""
     return render_template('pricing.html')
+
+
+@main_bp.route('/health')
+def health():
+    """Health check endpoint for monitoring and Docker."""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'ai-platform',
+        'version': '1.0.0'
+    }), 200
