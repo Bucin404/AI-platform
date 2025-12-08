@@ -1,18 +1,12 @@
-# Quick Start - Download AI Models
+# Quick Start - AI Models (Fully Automated!)
 
-## 🚀 Automatic Model Download
+## 🚀 One-Command Setup (RECOMMENDED)
 
-The platform now includes an automatic model downloader to get all required open-source AI models.
+The platform now includes **automatic download AND integration** for all AI models!
 
-### Step 1: List Available Models
+### Just Run This:
 
-```bash
-python download_models.py --list
-```
-
-### Step 2: Choose Your Version
-
-**Standard Models** (Recommended for production, ~16 GB total):
+**Standard Models** (Recommended, ~16 GB total):
 ```bash
 python download_models.py
 ```
@@ -22,22 +16,33 @@ python download_models.py
 python download_models.py --lite
 ```
 
-**Specific Models Only**:
+**That's it!** The script will:
+1. ✅ Download all models with progress bars
+2. ✅ Install `llama-cpp-python` automatically
+3. ✅ Configure the platform to use real models
+4. ✅ Update all necessary files
+
+After download completes:
+```bash
+# Restart the application
+docker-compose restart web
+# or
+python run.py
+```
+
+**Models are now fully integrated and ready to use! No manual steps required.**
+
+## 📋 Check Before Download (Optional)
+
+List available models:
+```bash
+python download_models.py --list
+```
+
+Download specific models only:
 ```bash
 python download_models.py --models deepseek-coder gpt4all
 ```
-
-### Step 3: Wait for Download
-
-The script will:
-- ✅ Show progress bars for each download
-- ✅ Automatically retry on failures
-- ✅ Skip already downloaded files
-- ✅ Verify file integrity
-
-### Step 4: Integrate Models
-
-See `docs/MODELS.md` for instructions on integrating downloaded models with the application.
 
 ## 📋 Available Models
 
@@ -100,6 +105,28 @@ docker-compose up -d
 - Check file sizes match expected
 - See integration guide in `docs/MODELS.md`
 
-## 📝 Current Status
+## 📝 How It Works
 
-By default, the platform uses **mock adapters** (placeholder responses) for development. Download and integrate actual models to enable real AI responses.
+**Before Download:**
+- Platform uses **mock adapters** (placeholder responses) for development
+
+**After Download:**
+- Models are automatically integrated
+- Real AI models load on application startup
+- Platform intelligently routes queries to best model
+
+**Manual Integration (Optional):**
+If automatic integration fails, you can manually integrate:
+```bash
+python integrate_models.py --auto
+```
+
+## 🎯 Model Selection
+
+The platform automatically selects the best model for your task:
+- **DeepSeek Coder** → Coding, debugging, programming
+- **Llama 2** → Documents, large files, PDFs
+- **Vicuna** → Images, videos, multimodal content
+- **GPT4All** → General conversation
+
+Or manually select any model in the chat interface.

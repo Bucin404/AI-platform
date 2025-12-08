@@ -139,8 +139,17 @@ def download_models(use_lite=False, models_to_download=None, skip_existing=True)
         print("   You can re-run this script and it will skip already downloaded files.")
     
     if success_count > 0 or skip_count > 0:
-        print("\n✅ Models are ready! Update app/services/model_service.py to load them.")
-        print("   See docs/INSTALL.md for integration instructions.")
+        print("\n✅ Models are ready!")
+        print("   Starting automatic integration...")
+        
+        # Auto-integrate models
+        try:
+            from integrate_models import auto_integrate_models
+            auto_integrate_models(use_lite=use_lite)
+        except Exception as e:
+            print(f"\n⚠️  Auto-integration encountered an issue: {str(e)}")
+            print("   Models are downloaded but may need manual integration.")
+            print("   Run: python integrate_models.py --auto")
 
 
 def list_available_models(use_lite=False):

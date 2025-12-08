@@ -6,6 +6,7 @@ Automatically configures downloaded models for use with the platform
 
 import os
 import sys
+import subprocess
 from pathlib import Path
 
 try:
@@ -105,6 +106,604 @@ def create_env_config(available_models):
     return "\n".join(env_lines)
 
 
+def install_llama_cpp_python():
+    """Install llama-cpp-python with appropriate flags."""
+    print("\n📦 Installing llama-cpp-python...")
+    print("   This may take a few minutes...")
+    
+    # Detect platform
+    import platform
+    system = platform.system()
+    machine = platform.machine()
+    
+    try:
+        # Check if already installed
+        import llama_cpp
+        print("   ✅ llama-cpp-python is already installed")
+        return True
+    except ImportError:
+        pass
+    
+    # Determine installation command
+    if system == "Darwin" and machine == "arm64":
+        # Apple Silicon - use Metal acceleration
+        print("   Detected Apple Silicon - installing with Metal acceleration...")
+        cmd = ['pip', 'install', 'llama-cpp-python', '--no-cache-dir']
+        env = os.environ.copy()
+        env['CMAKE_ARGS'] = '-DLLAMA_METAL=on'
+    elif system == "Linux":
+        # Linux - try CUDA if available, otherwise CPU
+        print("   Detected Linux - installing with CPU support...")
+        print("   (For GPU support, manually install with CUDA flags)")
+        cmd = ['pip', 'install', 'llama-cpp-python', '--no-cache-dir']
+        env = os.environ.copy()
+    else:
+        # Windows or other - CPU only
+        print("   Installing with CPU support...")
+        cmd = ['pip', 'install', 'llama-cpp-python', '--no-cache-dir']
+        env = os.environ.copy()
+    
+    try:
+        result = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=600)
+        if result.returncode == 0:
+            print("   ✅ llama-cpp-python installed successfully!")
+            return True
+        else:
+            print(f"   ❌ Installation failed: {result.stderr}")
+            return False
+    except subprocess.TimeoutExpired:
+        print("   ❌ Installation timed out (>10 minutes)")
+        return False
+    except Exception as e:
+        print(f"   ❌ Installation error: {str(e)}")
+        return False
+
+
+def update_model_service(available_models):
+    """Update model_service.py to use actual models."""
+    service_file = Path('./app/services/model_service.py')
+    
+    if not service_file.exists():
+        print("   ❌ model_service.py not found")
+        return False
+    
+    print("\n📝 Updating model_service.py...")
+    
+    # Read current content
+    with open(service_file, 'r') as f:
+        content = f.read()
+    
+    # Check if already integrated
+    if 'AUTO_INTEGRATED' in content:
+        print("   ℹ️  Models already integrated in model_service.py")
+        return True
+    
+    # Create updated model service with actual model loading
+    updated_service = '''"""Model service for AI interactions."""
+from abc import ABC, abstractmethod
+import random
+import re
+from pathlib import Path
+
+# AUTO_INTEGRATED: This file has been automatically integrated with downloaded models
+try:
+    from llama_cpp import Llama
+    LLAMA_CPP_AVAILABLE = True
+except ImportError:
+    LLAMA_CPP_AVAILABLE = False
+    print("Warning: llama-cpp-python not available, using mock adapters")
+
+
+class ModelAdapter(ABC):
+    """Base class for model adapters."""
+    
+    @abstractmethod
+    def generate(self, prompt, user=None):
+        """Generate a response from the model."""
+        pass
+    
+    @abstractmethod
+    def get_name(self):
+        """Get model name."""
+        pass
+    
+    @abstractmethod
+    def is_loaded(self):
+        """Check if model is loaded."""
+        pass
+
+
+class LlamaCppAdapter(ModelAdapter):
+    """Adapter for llama.cpp models."""
+    
+    def __init__(self, model_path=None):
+        self.model_path = model_path or './models/llama-2-7b.Q4_K_M.gguf'
+        self.model = None
+        self._is_loaded = False
+        
+        if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
+            try:
+                print(f"Loading Llama model from {self.model_path}...")
+                self.model = Llama(
+                    model_path=self.model_path,
+                    n_ctx=4096,
+                    n_threads=4,
+                    n_gpu_layers=0,  # Adjust for GPU
+                    verbose=False
+                )
+                self._is_loaded = True
+                print(f"✅ Llama model loaded successfully")
+            except Exception as e:
+                print(f"Warning: Could not load Llama model: {e}")
+                self._is_loaded = False
+    
+    def is_loaded(self):
+        return self._is_loaded
+    
+    def generate(self, prompt, user=None):
+        """Generate response using llama.cpp."""
+        if self._is_loaded and self.model:
+            try:
+                response = self.model(
+                    prompt,
+                    max_tokens=512,
+                    temperature=0.7,
+                    top_p=0.95,
+                    stop=["User:", "\\n\\nUser:", "\\n\\nQuestion:"],
+                    echo=False
+                )
+                return response['choices'][0]['text'].strip()
+            except Exception as e:
+                print(f"Error generating response: {e}")
+                return self._mock_response(prompt)
+        else:
+            return self._mock_response(prompt)
+    
+    def _mock_response(self, prompt):
+        """Fallback mock response."""
+        file_responses = [
+            f"[Llama.cpp - Document Processing]\\n\\nAnalyzing document content: {prompt[:80]}...\\n\\nKey information extracted:\\n- Document structure analysis\\n- Content summarization\\n- Key points identification\\n\\nNote: This is a mock response. Real model not loaded.",
+        ]
+        return random.choice(file_responses)
+    
+    def get_name(self):
+        return "llama.cpp"
+
+
+class GPT4AllAdapter(ModelAdapter):
+    """Adapter for GPT4All models."""
+    
+    def __init__(self, model_path=None):
+        self.model_path = model_path or './models/gpt4all-falcon-newbpe-q4_0.gguf'
+        self.model = None
+        self._is_loaded = False
+        
+        if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
+            try:
+                print(f"Loading GPT4All model from {self.model_path}...")
+                self.model = Llama(
+                    model_path=self.model_path,
+                    n_ctx=2048,
+                    n_threads=4,
+                    n_gpu_layers=0,
+                    verbose=False
+                )
+                self._is_loaded = True
+                print(f"✅ GPT4All model loaded successfully")
+            except Exception as e:
+                print(f"Warning: Could not load GPT4All model: {e}")
+                self._is_loaded = False
+    
+    def is_loaded(self):
+        return self._is_loaded
+    
+    def generate(self, prompt, user=None):
+        """Generate response using GPT4All."""
+        if self._is_loaded and self.model:
+            try:
+                response = self.model(
+                    prompt,
+                    max_tokens=512,
+                    temperature=0.7,
+                    top_p=0.95,
+                    stop=["User:", "\\n\\nUser:"],
+                    echo=False
+                )
+                return response['choices'][0]['text'].strip()
+            except Exception as e:
+                print(f"Error generating response: {e}")
+                return self._mock_response(prompt)
+        else:
+            return self._mock_response(prompt)
+    
+    def _mock_response(self, prompt):
+        """Fallback mock response."""
+        responses = [
+            f"Based on your query: {prompt[:50]}...\\n\\nHere's what I can tell you:\\n\\n[Mock response - model not loaded]",
+        ]
+        return random.choice(responses)
+    
+    def get_name(self):
+        return "gpt4all"
+
+
+class DeepSeekAdapter(ModelAdapter):
+    """Adapter for DeepSeek models."""
+    
+    def __init__(self, model_path=None):
+        self.model_path = model_path or './models/deepseek-coder-6.7b-instruct.Q4_K_M.gguf'
+        self.model = None
+        self._is_loaded = False
+        
+        if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
+            try:
+                print(f"Loading DeepSeek model from {self.model_path}...")
+                self.model = Llama(
+                    model_path=self.model_path,
+                    n_ctx=4096,
+                    n_threads=4,
+                    n_gpu_layers=0,
+                    verbose=False
+                )
+                self._is_loaded = True
+                print(f"✅ DeepSeek model loaded successfully")
+            except Exception as e:
+                print(f"Warning: Could not load DeepSeek model: {e}")
+                self._is_loaded = False
+    
+    def is_loaded(self):
+        return self._is_loaded
+    
+    def generate(self, prompt, user=None):
+        """Generate response using DeepSeek."""
+        if self._is_loaded and self.model:
+            try:
+                # DeepSeek uses a specific prompt format for coding
+                formatted_prompt = f"### Instruction:\\n{prompt}\\n\\n### Response:\\n"
+                response = self.model(
+                    formatted_prompt,
+                    max_tokens=1024,
+                    temperature=0.2,  # Lower temperature for code
+                    top_p=0.95,
+                    stop=["###", "\\n\\n\\n"],
+                    echo=False
+                )
+                return response['choices'][0]['text'].strip()
+            except Exception as e:
+                print(f"Error generating response: {e}")
+                return self._mock_response(prompt)
+        else:
+            return self._mock_response(prompt)
+    
+    def _mock_response(self, prompt):
+        """Fallback mock response."""
+        coding_responses = [
+            f"[DeepSeek Coder]\\n\\nAnalyzing your code request: {prompt[:80]}...\\n\\n```python\\n# Here's a solution approach:\\ndef example_function():\\n    # Implementation details\\n    pass\\n```\\n\\nNote: This is a mock response. Real model not loaded.",
+        ]
+        return random.choice(coding_responses)
+    
+    def get_name(self):
+        return "deepseek"
+
+
+class VicunaAdapter(ModelAdapter):
+    """Adapter for Vicuna models."""
+    
+    def __init__(self, model_path=None):
+        self.model_path = model_path or './models/vicuna-7b-v1.5.Q4_K_M.gguf'
+        self.model = None
+        self._is_loaded = False
+        
+        if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
+            try:
+                print(f"Loading Vicuna model from {self.model_path}...")
+                self.model = Llama(
+                    model_path=self.model_path,
+                    n_ctx=2048,
+                    n_threads=4,
+                    n_gpu_layers=0,
+                    verbose=False
+                )
+                self._is_loaded = True
+                print(f"✅ Vicuna model loaded successfully")
+            except Exception as e:
+                print(f"Warning: Could not load Vicuna model: {e}")
+                self._is_loaded = False
+    
+    def is_loaded(self):
+        return self._is_loaded
+    
+    def generate(self, prompt, user=None):
+        """Generate response using Vicuna."""
+        if self._is_loaded and self.model:
+            try:
+                response = self.model(
+                    prompt,
+                    max_tokens=512,
+                    temperature=0.7,
+                    top_p=0.95,
+                    stop=["USER:", "ASSISTANT:"],
+                    echo=False
+                )
+                return response['choices'][0]['text'].strip()
+            except Exception as e:
+                print(f"Error generating response: {e}")
+                return self._mock_response(prompt)
+        else:
+            return self._mock_response(prompt)
+    
+    def _mock_response(self, prompt):
+        """Fallback mock response."""
+        multimodal_responses = [
+            f"[Vicuna - Multimodal Analysis]\\n\\nAnalyzing your content request: {prompt[:80]}...\\n\\nNote: This is a mock response. Real model not loaded.",
+        ]
+        return random.choice(multimodal_responses)
+    
+    def get_name(self):
+        return "vicuna"
+
+
+# Initialize models - will auto-load if available
+MODELS = {
+    'llama': LlamaCppAdapter(),
+    'gpt4all': GPT4AllAdapter(),
+    'deepseek': DeepSeekAdapter(),
+    'vicuna': VicunaAdapter()
+}
+
+
+def detect_content_type(prompt):
+    """Detect content type from prompt to select appropriate model.
+    
+    Returns:
+        str: Content type - 'code', 'file', 'pdf', 'image', 'video', 'general'
+    """
+    prompt_lower = prompt.lower()
+    
+    # Coding keywords
+    coding_keywords = [
+        'code', 'function', 'class', 'programming', 'debug', 'error',
+        'python', 'javascript', 'java', 'c++', 'rust', 'go', 'php',
+        'html', 'css', 'sql', 'algorithm', 'api', 'backend', 'frontend',
+        'bug', 'syntax', 'compile', 'execute', 'script', 'package',
+        'import', 'export', 'variable', 'loop', 'conditional', 'refactor',
+        'optimize code', 'write code', 'fix code', 'review code',
+        'implementation', 'coding', 'developer', 'program'
+    ]
+    
+    # File processing keywords
+    file_keywords = ['file', 'document', 'upload', 'large file', 'csv', 'json', 'xml', 'yaml']
+    
+    # PDF keywords
+    pdf_keywords = ['pdf', 'document analysis', 'extract text', 'read pdf']
+    
+    # Image/photo keywords
+    image_keywords = ['image', 'photo', 'picture', 'jpeg', 'png', 'analyze image', 'vision']
+    
+    # Video keywords
+    video_keywords = ['video', 'mp4', 'avi', 'analyze video', 'video processing']
+    
+    # Check for coding content
+    if any(keyword in prompt_lower for keyword in coding_keywords):
+        return 'code'
+    
+    # Check for PDF content
+    if any(keyword in prompt_lower for keyword in pdf_keywords):
+        return 'pdf'
+    
+    # Check for image content
+    if any(keyword in prompt_lower for keyword in image_keywords):
+        return 'image'
+    
+    # Check for video content
+    if any(keyword in prompt_lower for keyword in video_keywords):
+        return 'video'
+    
+    # Check for file content
+    if any(keyword in prompt_lower for keyword in file_keywords):
+        return 'file'
+    
+    # Check for code blocks or patterns
+    if '```' in prompt or re.search(r'def |class |function |import |const |var |let ', prompt):
+        return 'code'
+    
+    return 'general'
+
+
+def select_model_for_content(prompt, requested_model=None):
+    """Select appropriate model based on content type.
+    
+    Args:
+        prompt: User prompt/message
+        requested_model: User-requested model (optional)
+    
+    Returns:
+        str: Model name to use
+    """
+    from flask import current_app
+    
+    # If user specifically requested a model, use it
+    if requested_model and requested_model in MODELS:
+        return requested_model
+    
+    content_type = detect_content_type(prompt)
+    
+    # Route to appropriate model based on content type
+    if content_type == 'code':
+        return 'deepseek'
+    elif content_type in ['pdf', 'file']:
+        return 'llama'
+    elif content_type in ['image', 'video']:
+        return 'vicuna'
+    else:
+        try:
+            default_model = current_app.config.get('DEFAULT_MODEL', 'gpt4all')
+            return default_model if default_model in MODELS else 'gpt4all'
+        except RuntimeError:
+            return 'gpt4all'
+
+
+def get_model_response(prompt, model_name='auto', user=None):
+    """Get response from specified model.
+    
+    Args:
+        prompt: User prompt/message
+        model_name: Model to use ('auto' for automatic selection)
+        user: User object
+    
+    Returns:
+        str: AI response
+    """
+    from flask import current_app
+    
+    # Auto-select model based on content if requested
+    if model_name == 'auto':
+        model_name = select_model_for_content(prompt)
+    elif model_name not in MODELS:
+        try:
+            model_name = current_app.config.get('DEFAULT_MODEL', 'gpt4all')
+            if model_name not in MODELS:
+                model_name = 'gpt4all'
+        except RuntimeError:
+            model_name = 'gpt4all'
+    
+    model = MODELS[model_name]
+    
+    # Generate response
+    response = model.generate(prompt, user)
+    
+    # Add model info for transparency
+    model_status = "loaded" if model.is_loaded() else "mock"
+    content_type = detect_content_type(prompt)
+    
+    if not model.is_loaded():
+        response += f"\\n\\n[Using mock response - actual {model_name} model not loaded]"
+    
+    return response
+
+
+def get_available_models():
+    """Get list of available models with their status."""
+    models_info = [
+        {
+            'id': 'auto',
+            'name': 'Auto-Select',
+            'description': 'Automatically selects the best model for your task',
+            'recommended': True,
+            'loaded': True
+        },
+        {
+            'id': 'deepseek',
+            'name': 'DeepSeek Coder',
+            'description': 'Specialized for coding, debugging, and programming tasks',
+            'use_case': 'Coding & Development',
+            'loaded': MODELS['deepseek'].is_loaded()
+        },
+        {
+            'id': 'gpt4all',
+            'name': 'GPT4All',
+            'description': 'General purpose conversational AI for everyday tasks',
+            'use_case': 'General Chat',
+            'loaded': MODELS['gpt4all'].is_loaded()
+        },
+        {
+            'id': 'llama',
+            'name': 'Llama.cpp',
+            'description': 'Optimized for document processing and large files',
+            'use_case': 'Files & Documents',
+            'loaded': MODELS['llama'].is_loaded()
+        },
+        {
+            'id': 'vicuna',
+            'name': 'Vicuna',
+            'description': 'Multimodal model for images, videos, and rich content',
+            'use_case': 'Images & Videos',
+            'loaded': MODELS['vicuna'].is_loaded()
+        }
+    ]
+    return models_info
+'''
+    
+    # Write updated content
+    try:
+        with open(service_file, 'w') as f:
+            f.write(updated_service)
+        print("   ✅ model_service.py updated successfully")
+        return True
+    except Exception as e:
+        print(f"   ❌ Failed to update model_service.py: {str(e)}")
+        return False
+
+
+def auto_integrate_models(use_lite=False):
+    """Automatically integrate downloaded models."""
+    print("\n" + "=" * 70)
+    print("🔧 Automatic Model Integration")
+    print("=" * 70)
+    
+    # Step 1: Check for models
+    print("\n1️⃣  Checking for downloaded models...")
+    available_models = check_models_exist(use_lite)
+    
+    if not available_models:
+        print("   ❌ No models found. Run download_models.py first.")
+        return False
+    
+    print(f"   ✅ Found {len(available_models)} model(s)")
+    for model_key, model_path in available_models.items():
+        file_size = Path(model_path).stat().st_size / (1024**3)
+        print(f"      • {model_key}: {file_size:.2f} GB")
+    
+    # Step 2: Install llama-cpp-python
+    print("\n2️⃣  Installing dependencies...")
+    if not install_llama_cpp_python():
+        print("   ⚠️  Failed to install llama-cpp-python")
+        print("   Models downloaded but not integrated")
+        print("   Try manual installation: pip install llama-cpp-python")
+        return False
+    
+    # Step 3: Update model service
+    print("\n3️⃣  Integrating models into platform...")
+    if not update_model_service(available_models):
+        print("   ⚠️  Failed to update model service")
+        return False
+    
+    # Step 4: Update requirements.txt
+    print("\n4️⃣  Updating requirements.txt...")
+    req_file = Path('./requirements.txt')
+    if req_file.exists():
+        with open(req_file, 'r') as f:
+            reqs = f.read()
+        
+        if 'llama-cpp-python' not in reqs:
+            with open(req_file, 'a') as f:
+                f.write('\nllama-cpp-python==0.2.20\n')
+            print("   ✅ Added llama-cpp-python to requirements.txt")
+        else:
+            print("   ℹ️  llama-cpp-python already in requirements.txt")
+    
+    # Success!
+    print("\n" + "=" * 70)
+    print("✅ INTEGRATION COMPLETE!")
+    print("=" * 70)
+    print("\n🎉 Models are now integrated and ready to use!")
+    print("\n📊 Status:")
+    print("   ✅ Models downloaded")
+    print("   ✅ Dependencies installed")
+    print("   ✅ Platform configured")
+    print("\n🚀 Next steps:")
+    print("   1. Restart the application:")
+    print("      docker-compose restart web")
+    print("      # or")
+    print("      python run.py")
+    print("\n   2. Models will automatically load on startup")
+    print("\n   3. Start chatting with real AI models!")
+    print("\n💡 Tip: Use 'Auto-Select' model for best results")
+    print()
+    
+    return True
+
+
 def main():
     """Main integration workflow."""
     import argparse
@@ -113,18 +712,20 @@ def main():
         description='Integrate downloaded models with the platform',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-This script checks for downloaded models and provides integration guidance.
+This script checks for downloaded models and integrates them automatically.
 
-Steps:
-1. Run download_models.py to download models
-2. Run this script to check integration status
-3. Follow the instructions to enable actual model usage
+Usage modes:
+  --auto        Automatically integrate models (install deps, update code)
+  --check       Just check status without making changes
+  --lite        Use lite model variants
 
-For automatic usage, models work in mock mode by default.
-To use real models, you need to:
-- Install llama-cpp-python: pip install llama-cpp-python
-- Uncomment integration code in app/services/model_service.py
-- Restart the application
+Auto-integration will:
+1. Check for downloaded models
+2. Install llama-cpp-python with appropriate flags
+3. Update model_service.py to load actual models
+4. Update requirements.txt
+
+After integration, restart the app and models will work automatically!
         """
     )
     
@@ -140,8 +741,26 @@ To use real models, you need to:
         help='Generate environment configuration for .env file'
     )
     
+    parser.add_argument(
+        '--auto',
+        action='store_true',
+        help='Automatically integrate models (recommended)'
+    )
+    
+    parser.add_argument(
+        '--check',
+        action='store_true',
+        help='Only check status without making changes'
+    )
+    
     args = parser.parse_args()
     
+    # Auto integration mode
+    if args.auto:
+        success = auto_integrate_models(args.lite)
+        sys.exit(0 if success else 1)
+    
+    # Check mode (original behavior)
     print("=" * 70)
     print("🔧 Model Integration Status")
     print("=" * 70)
@@ -157,6 +776,8 @@ To use real models, you need to:
         if args.lite:
             print("   python download_models.py --lite")
         print()
+        print("💡 TIP: Use --auto flag for automatic integration:")
+        print("   python download_models.py  # Downloads and auto-integrates")
         return
     
     print(f"✅ Found {len(available_models)} model(s):")

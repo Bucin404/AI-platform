@@ -43,8 +43,10 @@ cd AI-platform
 cp .env.example .env
 # Edit .env with your configuration
 
-# Download AI models (optional, uses mock by default)
+# Download & integrate AI models (AUTOMATIC - recommended!)
 python download_models.py
+# Downloads models + installs dependencies + configures platform
+# Use --lite for smaller models (~1.6GB vs ~16GB)
 
 # Start services
 docker-compose up -d
@@ -87,8 +89,10 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your configuration
 
-# Download AI models (optional)
-python download_models.py --lite  # Use --lite for smaller models
+# Download & integrate AI models (AUTOMATIC!)
+python download_models.py --lite  # Lite version for local dev (~1.6GB)
+# Or use: python download_models.py  # Full version (~16GB)
+# This automatically installs deps and configures the platform!
 
 # Initialize database
 export FLASK_APP=run.py
