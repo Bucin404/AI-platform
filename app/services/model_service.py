@@ -181,6 +181,8 @@ def select_model_for_content(prompt, requested_model=None):
     Returns:
         str: Model name to use
     """
+    from flask import current_app
+    
     # If user specifically requested a model, use it
     if requested_model and requested_model in MODELS:
         return requested_model
@@ -198,8 +200,13 @@ def select_model_for_content(prompt, requested_model=None):
         # Use Vicuna for multimodal content
         return 'vicuna'
     else:
-        # Use GPT4All for general chat
-        return 'gpt4all'
+        # Use configured default model for general chat
+        try:
+            default_model = current_app.config.get('DEFAULT_MODEL', 'gpt4all')
+            return default_model if default_model in MODELS else 'gpt4all'
+        except RuntimeError:
+            # Outside app context, use gpt4all
+            return 'gpt4all'
 
 
 def get_model_response(prompt, model_name='auto', user=None):
@@ -213,11 +220,19 @@ def get_model_response(prompt, model_name='auto', user=None):
     Returns:
         str: AI response
     """
+    from flask import current_app
+    
     # Auto-select model based on content if requested
     if model_name == 'auto':
         model_name = select_model_for_content(prompt)
     elif model_name not in MODELS:
-        model_name = 'gpt4all'
+        # Fallback to configured default model if invalid model specified
+        try:
+            model_name = current_app.config.get('DEFAULT_MODEL', 'gpt4all')
+            if model_name not in MODELS:
+                model_name = 'gpt4all'
+        except RuntimeError:
+            model_name = 'gpt4all'
     
     model = MODELS[model_name]
     
