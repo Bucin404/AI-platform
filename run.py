@@ -45,4 +45,14 @@ def create_admin():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # WARNING: Debug mode should NEVER be enabled in production
+    # It allows arbitrary code execution through the debugger
+    # Set DEBUG=False in production environment variables
+    import os
+    debug_mode = os.environ.get('DEBUG', 'False').lower() == 'true'
+    
+    if debug_mode:
+        print("WARNING: Running in DEBUG mode. This should ONLY be used in development!")
+        print("Set DEBUG=False in production to prevent security vulnerabilities.")
+    
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)

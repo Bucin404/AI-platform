@@ -21,6 +21,8 @@ RUN mkdir -p /app/models /app/uploads
 # Set environment variables
 ENV FLASK_APP=run.py
 ENV PYTHONUNBUFFERED=1
+ENV DEBUG=False
+ENV FLASK_ENV=production
 
 # Expose port
 EXPOSE 5000
