@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ - AI Platform{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-8 text-center">
+            Frequently Asked Questions
+        </h1>
+        
+        <div class="space-y-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    What AI models do you support?
+                </h3>
+                <p class="text-gray-600 dark:text-gray-300">
+                    We support multiple open-source AI models including DeepSeek Coder (for coding tasks), 
+                    Llama.cpp (for documents and files), Vicuna (for images and videos), and GPT4All (for general chat). 
+                    Our auto-select feature automatically chooses the best model for your task.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    How does auto model selection work?
+                </h3>
+                <p class="text-gray-600 dark:text-gray-300">
+                    Our intelligent routing system analyzes your prompt to determine the content type. 
+                    For coding questions, it uses DeepSeek Coder. For document processing, it uses Llama.cpp. 
+                    For images/videos, it uses Vicuna. For general queries, it uses GPT4All.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    What are the rate limits?
+                </h3>
+                <p class="text-gray-600 dark:text-gray-300">
+                    Free tier users get 10 messages per hour. Premium users get 100 messages per hour. 
+                    Admin users have unlimited access. Rate limits reset every hour.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    How do I upgrade to premium?
+                </h3>
+                <p class="text-gray-600 dark:text-gray-300">
+                    Visit our <a href="{{ url_for('main.pricing') }}" class="text-indigo-600 hover:underline">pricing page</a> 
+                    and select your preferred plan. We accept payments through Midtrans for secure transactions.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    Is my data secure?
+                </h3>
+                <p class="text-gray-600 dark:text-gray-300">
+                    Yes! We implement industry-standard security measures including HTTPS encryption, 
+                    CSRF protection, secure password hashing, and session management. We never share your data with third parties.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    Can I use the API programmatically?
+                </h3>
+                <p class="text-gray-600 dark:text-gray-300">
+                    Yes! Premium users have access to our REST API. Check our API documentation for details on endpoints and authentication.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    How do I reset my password?
+                </h3>
+                <p class="text-gray-600 dark:text-gray-300">
+                    Click "Forgot password?" on the login page. You'll receive an email with a reset link. 
+                    The link expires after 1 hour for security reasons.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    Do you support multiple languages?
+                </h3>
+                <p class="text-gray-600 dark:text-gray-300">
+                    Our AI models can understand and respond in multiple languages. The platform interface 
+                    currently supports English, with more languages coming soon.
+                </p>
+            </div>
+        </div>
+        
+        <div class="mt-12 text-center">
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+                Still have questions?
+            </p>
+            <a href="{{ url_for('main.about') }}" class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
+                Contact us
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

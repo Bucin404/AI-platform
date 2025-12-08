@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}About - AI Platform{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-8 text-center">
+            About AI Platform
+        </h1>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Our Mission
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                AI Platform is an open-source AI chat platform that intelligently routes your queries 
+                to specialized AI models based on content type. We believe in making AI accessible, 
+                efficient, and tailored to specific use cases.
+            </p>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Why Choose Us?
+            </h2>
+            <ul class="space-y-3">
+                <li class="flex items-start text-gray-600 dark:text-gray-300">
+                    <svg class="w-6 h-6 text-indigo-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span><strong>Intelligent Model Routing:</strong> Automatically selects the best AI model for your task</span>
+                </li>
+                <li class="flex items-start text-gray-600 dark:text-gray-300">
+                    <svg class="w-6 h-6 text-indigo-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span><strong>Specialized Models:</strong> DeepSeek for coding, Llama for documents, Vicuna for media</span>
+                </li>
+                <li class="flex items-start text-gray-600 dark:text-gray-300">
+                    <svg class="w-6 h-6 text-indigo-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span><strong>Open Source:</strong> Built with transparency and community collaboration</span>
+                </li>
+                <li class="flex items-start text-gray-600 dark:text-gray-300">
+                    <svg class="w-6 h-6 text-indigo-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span><strong>Privacy First:</strong> Your data stays secure with enterprise-grade encryption</span>
+                </li>
+                <li class="flex items-start text-gray-600 dark:text-gray-300">
+                    <svg class="w-6 h-6 text-indigo-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span><strong>Easy Integration:</strong> RESTful API for seamless integration with your apps</span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Technology Stack
+            </h2>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2">Backend</h3>
+                    <ul class="text-gray-600 dark:text-gray-300 space-y-1">
+                        <li>• Flask (Python web framework)</li>
+                        <li>• PostgreSQL (Database)</li>
+                        <li>• Redis (Caching & rate limiting)</li>
+                        <li>• SQLAlchemy (ORM)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2">Frontend</h3>
+                    <ul class="text-gray-600 dark:text-gray-300 space-y-1">
+                        <li>• Tailwind CSS (Styling)</li>
+                        <li>• Vanilla JavaScript</li>
+                        <li>• Marked.js (Markdown rendering)</li>
+                        <li>• Highlight.js (Code highlighting)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Contact Us
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                Have questions or feedback? We'd love to hear from you!
+            </p>
+            <div class="space-y-2 text-gray-600 dark:text-gray-300">
+                <p><strong>Email:</strong> support@aiplatform.com</p>
+                <p><strong>GitHub:</strong> <a href="https://github.com/Bucin404/AI-platform" class="text-indigo-600 hover:underline">github.com/Bucin404/AI-platform</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

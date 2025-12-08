@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}AI Platform - Open Source AI Chat{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">AI Platform</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('main.about') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">About</a>
+                    <a href="{{ url_for('main.faq') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">FAQ</a>
+                    <a href="{{ url_for('main.pricing') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">Pricing</a>
+                    <a href="{{ url_for('auth.login') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">Login</a>
+                    <a href="{{ url_for('auth.register') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="text-center">
+            <h1 class="text-5xl font-extrabold text-gray-900 dark:text-white sm:text-6xl">
+                AI-Powered Chat Platform
+            </h1>
+            <p class="mt-6 text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                Intelligent model routing for coding, documents, images, and general tasks. 
+                Open-source AI models tailored to your needs.
+            </p>
+            <div class="mt-10 flex justify-center space-x-4">
+                <a href="{{ url_for('auth.register') }}" class="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition shadow-lg">
+                    Get Started Free
+                </a>
+                <a href="{{ url_for('main.about') }}" class="bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-lg transition border-2 border-indigo-600">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
+            Specialized AI Models
+        </h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <div class="text-4xl mb-4">💻</div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">DeepSeek Coder</h3>
+                <p class="text-gray-600 dark:text-gray-300">Specialized for coding, debugging, and programming tasks with advanced code understanding.</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <div class="text-4xl mb-4">📄</div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Llama.cpp</h3>
+                <p class="text-gray-600 dark:text-gray-300">Optimized for document processing, PDFs, and large file analysis.</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <div class="text-4xl mb-4">🎨</div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Vicuna Vision</h3>
+                <p class="text-gray-600 dark:text-gray-300">Multimodal AI for images, videos, and rich media content analysis.</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <div class="text-4xl mb-4">💬</div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">GPT4All</h3>
+                <p class="text-gray-600 dark:text-gray-300">General-purpose conversational AI for everyday tasks and questions.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="bg-white dark:bg-gray-800 py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
+                How It Works
+            </h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="bg-indigo-100 dark:bg-indigo-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">1</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Ask Your Question</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Type your message or upload your files</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-indigo-100 dark:bg-indigo-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">2</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Auto-Route to Best Model</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Our system selects the optimal AI model</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-indigo-100 dark:bg-indigo-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">3</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Get Accurate Response</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Receive tailored, high-quality answers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-6">
+            Ready to Get Started?
+        </h2>
+        <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
+            Join thousands of users leveraging specialized AI models
+        </p>
+        <a href="{{ url_for('auth.register') }}" class="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition shadow-lg inline-block">
+            Create Free Account
+        </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2024 AI Platform. Open Source AI Chat Platform.</p>
+        </div>
+    </footer>
+</div>
+{% endblock %}
