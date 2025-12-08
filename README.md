@@ -43,6 +43,9 @@ cd AI-platform
 cp .env.example .env
 # Edit .env with your configuration
 
+# Download AI models (optional, uses mock by default)
+python download_models.py
+
 # Start services
 docker-compose up -d
 
@@ -69,6 +72,9 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your configuration
 
+# Download AI models (optional)
+python download_models.py --lite  # Use --lite for smaller models
+
 # Initialize database
 export FLASK_APP=run.py
 flask db init
@@ -85,6 +91,7 @@ python run.py
 ## Documentation
 
 - [Installation Guide](docs/INSTALL.md) - Detailed installation instructions
+- [Model Download Guide](docs/MODELS.md) - How to download and configure AI models
 - [Deployment Guide](docs/DEPLOY.md) - Production deployment on Ubuntu
 - [API Documentation](docs/API.md) - REST API reference
 

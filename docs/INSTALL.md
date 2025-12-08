@@ -172,9 +172,28 @@ flask db downgrade
 
 ## Model Configuration
 
-### Adding AI Models
+### Automatic Model Download (Recommended)
 
-1. Download model files (e.g., llama.cpp .gguf files, GPT4All .bin files)
+Use the provided download script to automatically download all required models:
+
+```bash
+# Download all standard models (~16 GB)
+python download_models.py
+
+# OR download lite versions (~1.6 GB) for limited resources
+python download_models.py --lite
+
+# OR download specific models only
+python download_models.py --models deepseek-coder gpt4all
+```
+
+**See [docs/MODELS.md](MODELS.md) for complete model documentation.**
+
+### Manual Model Download
+
+If you prefer to download manually:
+
+1. Download model files from sources listed in `models_config.py`
 2. Place them in the `models/` directory
 3. Update `app/services/model_service.py` to configure model paths
 4. Restart the application
@@ -182,9 +201,11 @@ flask db downgrade
 ### Supported Models
 
 - **DeepSeek Coder**: For coding and programming tasks
-- **Llama.cpp**: For documents and large files
+- **Llama 2**: For documents and large files
 - **Vicuna**: For images and videos
 - **GPT4All**: For general chat
+
+**Available in both standard (7B parameters) and lite (1-2B parameters) versions.**
 
 ## Troubleshooting
 
