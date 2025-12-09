@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.about_title }} - {{ t.platform_name }}{% endblock %}
+
+{% block content %}
+<div class="about-page">
+    <!-- Hero Section -->
+    <div class="about-hero fade-in">
+        <h1>{{ t.about_title }}</h1>
+        <p style="font-size: 1.25rem; margin-top: 1rem;">
+            {% if lang == 'en' %}
+            Intelligent AI platform designed for seamless conversations
+            {% else %}
+            Platform AI cerdas yang dirancang untuk percakapan yang mulus
+            {% endif %}
+        </p>
+    </div>
+    
+    <!-- Mission Section -->
+    <div class="about-section scale-in">
+        <h2 style="text-align: center; margin-bottom: 2rem;">{{ t.about_mission }}</h2>
+        <p style="font-size: 1.125rem; text-align: center; max-width: 800px; margin: 0 auto; color: var(--gray-600); line-height: 1.8;">
+            {{ t.about_mission_text }}
+        </p>
+    </div>
+    
+    <!-- Features Section -->
+    <div class="about-section">
+        <h2 style="text-align: center; margin-bottom: 3rem;">{{ t.about_why }}</h2>
+        <div class="about-features">
+            {% for feature in t.about_features %}
+            <div class="about-feature-card fade-in">
+                <div style="width: 48px; height: 48px; background: var(--primary-gradient); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                    <svg style="width: 24px; height: 24px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <p style="font-size: 1rem; color: var(--gray-700); line-height: 1.6;">{{ feature }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Tech Stack -->
+    <div class="about-section">
+        <div class="card card-gradient" style="text-align: center; padding: 3rem;">
+            <h2 style="margin-bottom: 1.5rem;">{{ t.about_tech }}</h2>
+            <p style="font-size: 1.125rem; line-height: 1.8; max-width: 700px; margin: 0 auto;">
+                {% if lang == 'en' %}
+                Built with Flask, PostgreSQL, Redis, and powered by cutting-edge AI technology.
+                Deployed with Docker for maximum reliability and scalability.
+                {% else %}
+                Dibangun dengan Flask, PostgreSQL, Redis, dan didukung teknologi AI terdepan.
+                Di-deploy dengan Docker untuk keandalan dan skalabilitas maksimum.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    
+    <!-- Contact Section -->
+    <div class="about-section">
+        <div class="card" style="text-align: center; padding: 3rem;">
+            <h2 style="margin-bottom: 1rem;">{{ t.about_contact }}</h2>
+            <p style="font-size: 1.125rem; color: var(--gray-600); margin-bottom: 2rem;">
+                {{ t.about_contact_text }}
+            </p>
+            <a href="mailto:contact@aismooht.com" class="btn btn-primary">
+                {% if lang == 'en' %}Contact Us{% else %}Hubungi Kami{% endif %}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

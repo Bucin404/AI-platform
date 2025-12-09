@@ -1,0 +1,213 @@
+version: '3.8'
+
+# Docker Compose configuration optimized for MacBook M4 (Apple Silicon)
+# This configuration includes ARM64-optimized images and Metal acceleration support
+#
+# Usage:
+#   docker-compose -f docker-compose.m4.yml up -d
+#   docker-compose -f docker-compose.m4.yml down
+#
+# Features:
+#   - ARM64 native images for better performance
+#   - Optimized resource limits for local development
+#   - Volume mounts for hot-reload during development
+#   - Health checks for all services
+#   - Metal acceleration ready for AI models
+
+services:
+  postgres:
+    # Using ARM64-optimized PostgreSQL image
+    image: postgres:15-alpine
+    container_name: aiplatform_postgres_m4
+    platform: linux/arm64
+    environment:
+      POSTGRES_USER: aiplatform
+      POSTGRES_PASSWORD: aiplatform
+      POSTGRES_DB: aiplatform
+      # Optimize for Apple Silicon
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+    volumes:
+      - postgres_data_m4:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    # Resource limits optimized for M4
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aiplatform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - aiplatform_network
+
+  redis:
+    # Using ARM64-optimized Redis image
+    image: redis:7-alpine
+    container_name: aiplatform_redis_m4
+    platform: linux/arm64
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_m4:/data
+    # Resource limits for M4
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - aiplatform_network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.m4
+      args:
+        - PYTHON_VERSION=3.11
+    container_name: aiplatform_web_m4
+    platform: linux/arm64
+    # Development mode with hot-reload
+    command: sh -c "flask db upgrade && python run.py"
+    volumes:
+      # Mount source code for hot-reload
+      - .:/app:delegated
+      - ./models:/app/models:delegated
+      - ./uploads:/app/uploads:delegated
+      # Exclude these from sync for better performance
+      - /app/__pycache__
+      - /app/.pytest_cache
+      - /app/venv
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+      - DEBUG=True
+      - DATABASE_URL=postgresql://aiplatform:aiplatform@postgres:5432/aiplatform
+      - REDIS_URL=redis://redis:6379/0
+      # Enable Metal acceleration for AI models on Apple Silicon
+      - GGML_METAL=1
+      - LLAMA_METAL=1
+      # Optimize for local development
+      - PYTHONUNBUFFERED=1
+      - WERKZEUG_DEBUG_PIN=off
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Resource limits optimized for M4 with neural engine
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - aiplatform_network
+
+  # Optional: pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: aiplatform_pgadmin_m4
+    platform: linux/arm64
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@aiplatform.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    volumes:
+      - pgadmin_data_m4:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    profiles:
+      - tools
+    networks:
+      - aiplatform_network
+
+  # Optional: Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: aiplatform_redis_commander_m4
+    platform: linux/arm64
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    profiles:
+      - tools
+    networks:
+      - aiplatform_network
+
+volumes:
+  postgres_data_m4:
+    driver: local
+  redis_data_m4:
+    driver: local
+  pgadmin_data_m4:
+    driver: local
+
+networks:
+  aiplatform_network:
+    driver: bridge
+
+# Performance Tips for MacBook M4:
+# 1. Enable VirtioFS for better I/O performance:
+#    Docker Desktop > Settings > General > Enable VirtioFS
+#
+# 2. Allocate resources in Docker Desktop:
+#    - CPUs: 6-8 cores (M4 has 10 cores, leave some for macOS)
+#    - Memory: 12-16 GB
+#    - Swap: 2 GB
+#    - Disk image size: 64 GB+
+#
+# 3. Use delegated volume mounts (already configured above)
+#
+# 4. For AI models with Metal acceleration:
+#    - Install llama-cpp-python with Metal support
+#    - Models will automatically use Neural Engine
+#
+# 5. Development workflow:
+#    docker-compose -f docker-compose.m4.yml up -d
+#    # View logs
+#    docker-compose -f docker-compose.m4.yml logs -f web
+#    # Restart after code changes (hot-reload is automatic)
+#    docker-compose -f docker-compose.m4.yml restart web
+#
+# 6. To include optional tools (pgAdmin, Redis Commander):
+#    docker-compose -f docker-compose.m4.yml --profile tools up -d

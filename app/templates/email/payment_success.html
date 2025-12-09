@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #10B981; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .transaction { background: white; padding: 15px; margin: 15px 0; border-left: 4px solid #10B981; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Payment Successful!</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ user.username }},</p>
+            <p>Your payment has been successfully processed!</p>
+            <div class="transaction">
+                <p><strong>Transaction Details:</strong></p>
+                <p>Transaction ID: {{ transaction.transaction_id }}</p>
+                <p>Amount: {{ transaction.amount }} {{ transaction.currency }}</p>
+                <p>Tier: {{ transaction.tier }}</p>
+                <p>Duration: {{ transaction.duration_days }} days</p>
+            </div>
+            <p>Thank you for upgrading to premium! You now have access to increased rate limits and priority support.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 AI Platform. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

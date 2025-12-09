@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.pricing_title }} - {{ t.platform_name }}{% endblock %}
+
+{% block content %}
+<div class="pricing-page">
+    <div class="hero-section fade-in">
+        <h1>{{ t.pricing_title }}</h1>
+        <p>{{ t.pricing_subtitle }}</p>
+    </div>
+    
+    <div class="pricing-grid">
+        <!-- Free Plan -->
+        <div class="pricing-card scale-in">
+            <h3>{{ t.pricing_free }}</h3>
+            <div class="price">
+                $0<span>{{ t.pricing_per_month }}</span>
+            </div>
+            <ul class="features">
+                <li>10 {{ t.nav_chat if lang == 'en' else 'permintaan' }} / {{ t.pricing_per_month.replace('/', '') if lang == 'en' else 'jam' }}</li>
+                <li>{{ t.feature_models_desc if lang == 'en' else 'Akses model dasar' }}</li>
+                <li>{{ 'Community support' if lang == 'en' else 'Dukungan komunitas' }}</li>
+            </ul>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">{{ t.pricing_get_started }}</a>
+        </div>
+        
+        <!-- Premium Plan - Featured -->
+        <div class="pricing-card featured scale-in">
+            <div class="badge">{{ t.pricing_most_popular }}</div>
+            <h3>{{ t.pricing_premium }}</h3>
+            <div class="price">
+                $9.99<span>{{ t.pricing_per_month }}</span>
+            </div>
+            <ul class="features">
+                <li>100 {{ t.nav_chat if lang == 'en' else 'permintaan' }} / {{ t.pricing_per_month.replace('/', '') if lang == 'en' else 'jam' }}</li>
+                <li>{{ 'All models access' if lang == 'en' else 'Akses semua model' }}</li>
+                <li>{{ 'Priority support' if lang == 'en' else 'Dukungan prioritas' }}</li>
+                <li>{{ 'Advanced features' if lang == 'en' else 'Fitur lanjutan' }}</li>
+            </ul>
+            <a href="{{ url_for('payments.index') }}" class="btn btn-primary">{{ t.pricing_upgrade }}</a>
+        </div>
+        
+        <!-- Annual Plan -->
+        <div class="pricing-card scale-in">
+            <div class="badge">{{ t.pricing_best_value }}</div>
+            <h3>{{ t.pricing_premium_annual }}</h3>
+            <div class="price">
+                $99<span>{{ t.pricing_per_year }}</span>
+            </div>
+            <ul class="features">
+                <li>{{ 'Unlimited requests' if lang == 'en' else 'Permintaan tak terbatas' }}</li>
+                <li>{{ 'All models access' if lang == 'en' else 'Akses semua model' }}</li>
+                <li>{{ '24/7 Priority support' if lang == 'en' else 'Dukungan prioritas 24/7' }}</li>
+                <li>{{ 'Advanced features' if lang == 'en' else 'Fitur lanjutan' }}</li>
+                <li>{{ 'API access' if lang == 'en' else 'Akses API' }}</li>
+            </ul>
+            <a href="{{ url_for('payments.index') }}" class="btn btn-primary">{{ t.pricing_upgrade }}</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
