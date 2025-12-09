@@ -862,6 +862,7 @@ def get_model_response(prompt, model_name='auto', user=None, history=None):
     
     print(f"\n=== MODEL SERVICE DEBUG ===")
     print(f"User prompt: {prompt}")
+    print(f"Requested model: {model_name}")
     
     # Build context from history if provided
     if history:
@@ -885,26 +886,43 @@ def get_model_response(prompt, model_name='auto', user=None, history=None):
     # Auto-select model based on content if requested
     if model_name == 'auto':
         model_name = select_model_for_content(prompt)
-    elif model_name not in MODELS:
-        try:
-            model_name = current_app.config.get('DEFAULT_MODEL', 'gpt4all')
-            if model_name not in MODELS:
-                model_name = 'gpt4all'
-        except RuntimeError:
-            model_name = 'gpt4all'
+        print(f"Auto-selected model: {model_name}")
     
-    print(f"Selected model: {model_name}")
+    # Validate model exists
+    if model_name not in MODELS:
+        print(f"WARNING: Model '{model_name}' not found in MODELS: {list(MODELS.keys())}")
+        print(f"Available models: {list(MODELS.keys())}")
+        # Default to gpt4all
+        model_name = 'gpt4all'
+        print(f"Falling back to: {model_name}")
     
-    model = MODELS[model_name]
-    print(f"Model loaded: {model.is_loaded()}")
+    print(f"Final selected model: {model_name}")
     
-    # Generate response from model - USER INPUT GOES DIRECTLY HERE
-    response = model.generate(full_prompt, user)
-    
-    print(f"AI response: {response[:200]}...")
-    print(f"=== END DEBUG ===\n")
-    
-    return response
+    try:
+        model = MODELS[model_name]
+        print(f"Model loaded status: {model.is_loaded()}")
+        
+        if not model.is_loaded():
+            print(f"WARNING: Model {model_name} is not loaded, will use fallback response")
+        
+        # Generate response from model - USER INPUT GOES DIRECTLY HERE
+        response = model.generate(full_prompt, user)
+        
+        print(f"AI response generated: {len(response)} characters")
+        print(f"Response preview: {response[:200]}...")
+        print(f"=== END DEBUG ===\n")
+        
+        return response
+        
+    except Exception as e:
+        print(f"ERROR in get_model_response: {str(e)}")
+        print(f"Error type: {type(e).__name__}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        print(f"=== END DEBUG (ERROR) ===\n")
+        
+        # Return user-friendly error message
+        raise Exception(f"AI model error: {str(e)}")
 
 
 def get_available_models():
