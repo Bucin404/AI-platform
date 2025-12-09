@@ -92,7 +92,10 @@ class ConversationSession(db.Model):
     
     def get_context_messages(self, limit=10):
         """Get recent messages for context (last N messages)."""
-        return self.messages.order_by(Message.created_at.desc()).limit(limit).all()[::-1]
+        query = self.messages.order_by(Message.created_at.desc())
+        if limit is not None:
+            query = query.limit(limit)
+        return query.all()[::-1]
     
     def __repr__(self):
         return f'<ConversationSession {self.id} for User {self.user_id}>'

@@ -379,8 +379,6 @@ class MistralAdapter(ModelAdapter):
                             fallback = self._mock_response(prompt)
                             for word in fallback.split():
                                 yield word + " "
-                            print(f"  ✅ Fallback complete: {len(words)} words")
-                            print(f"✅ Mistral streaming done: {token_count} tokens")
                     
                     return streaming_generator()
                 else:
