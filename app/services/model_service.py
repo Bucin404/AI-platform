@@ -362,21 +362,26 @@ class MistralAdapter(ModelAdapter):
                                 elif isinstance(chunk, dict):
                                     token = chunk.get('choices', [{}])[0].get('text', '')
                                 else:
-                                    token = str(chunk)
+                                    token = str(chunk) if chunk is not None else ''
                                 
                                 print(f"  🔍 Extracted token: {repr(token)[:100]}")
                                 token_count += 1
                                 
-                                if token:
-                                    print(f"  📦 Token {token_count}: {repr(token[:50])}")
-                                    empty_count = 0  # Reset empty counter
-                                    yielded_any = True
-                                    yield token
-                                else:
-                                    empty_count += 1
-                                    print(f"  ⚠️  Empty chunk {empty_count}/{max_empty}")
+                                # FIXED: Don't filter empty/whitespace tokens - yield them all (except None)
+                                # This ensures SSE counter increments even with empty chunks
+                                if token is not None:
+                                    print(f"  📦 Token {token_count}: {repr(token[:50]) if token else '(empty)'}")
+                                    if token:  # Only track non-empty as "real" tokens
+                                        empty_count = 0
+                                        yielded_any = True
+                                    else:
+                                        empty_count += 1
+                                        print(f"  ⚠️  Empty chunk {empty_count}/{max_empty}")
                                     
-                                    # If too many empty chunks, switch to fallback
+                                    # Yield the token (even if empty/whitespace)
+                                    yield token
+                                    
+                                    # If too many consecutive empty chunks, switch to fallback
                                     if empty_count >= max_empty:
                                         print(f"  ⚠️  Too many empty chunks! Using fallback response...")
                                         fallback = self._mock_response(prompt)
@@ -481,6 +486,7 @@ class CodeLlamaAdapter(ModelAdapter):
                     def streaming_generator():
                         print(f"🔄 CodeLlama streaming started...")
                         yielded_any = False
+                        token_count = 0
                         
                         try:
                             for chunk in response:
@@ -490,23 +496,27 @@ class CodeLlamaAdapter(ModelAdapter):
                                 elif isinstance(chunk, dict):
                                     token = chunk.get('choices', [{}])[0].get('text', '')
                                 else:
-                                    token = str(chunk)
-                                    
-                                if token:
-                                    yielded_any = True
+                                    token = str(chunk) if chunk is not None else ''
+                                
+                                # FIXED: Yield all tokens including empty/whitespace (only filter None)
+                                if token is not None:
+                                    token_count += 1
+                                    print(f"  📦 CodeLlama token {token_count}: {repr(token[:50]) if token else '(empty)'}")
+                                    if token:  # Track non-empty tokens
+                                        yielded_any = True
                                     yield token
                         except StopIteration:
                             pass
                         
-                        # Fallback if no tokens yielded
+                        # Fallback if no real tokens yielded
                         if not yielded_any:
-                            print(f"  ⚠️  CodeLlama: 0 tokens! Using fallback...")
+                            print(f"  ⚠️  CodeLlama: 0 real tokens! Using fallback...")
                             fallback = self._mock_response(prompt)
                             for word in fallback.split():
                                 yield word + " "
                             print(f"  ✅ CodeLlama fallback complete")
                         else:
-                            print(f"  ✅ CodeLlama streaming done")
+                            print(f"  ✅ CodeLlama streaming done: {token_count} tokens")
                     
                     return streaming_generator()
                 else:
@@ -583,6 +593,7 @@ class Llama3Adapter(ModelAdapter):
                     def streaming_generator():
                         print(f"🔄 Llama3 streaming started...")
                         yielded_any = False
+                        token_count = 0
                         
                         try:
                             for chunk in response:
@@ -592,23 +603,27 @@ class Llama3Adapter(ModelAdapter):
                                 elif isinstance(chunk, dict):
                                     token = chunk.get('choices', [{}])[0].get('text', '')
                                 else:
-                                    token = str(chunk)
-                                    
-                                if token:
-                                    yielded_any = True
+                                    token = str(chunk) if chunk is not None else ''
+                                
+                                # FIXED: Yield all tokens including empty/whitespace (only filter None)
+                                if token is not None:
+                                    token_count += 1
+                                    print(f"  📦 Llama3 token {token_count}: {repr(token[:50]) if token else '(empty)'}")
+                                    if token:  # Track non-empty tokens
+                                        yielded_any = True
                                     yield token
                         except StopIteration:
                             pass
                         
-                        # Fallback if no tokens yielded
+                        # Fallback if no real tokens yielded
                         if not yielded_any:
-                            print(f"  ⚠️  Llama3: 0 tokens! Using fallback...")
+                            print(f"  ⚠️  Llama3: 0 real tokens! Using fallback...")
                             fallback = self._mock_response(prompt)
                             for word in fallback.split():
                                 yield word + " "
                             print(f"  ✅ Llama3 fallback complete")
                         else:
-                            print(f"  ✅ Llama3 streaming done")
+                            print(f"  ✅ Llama3 streaming done: {token_count} tokens")
                     
                     return streaming_generator()
                 else:
@@ -685,6 +700,7 @@ class HermesAdapter(ModelAdapter):
                     def streaming_generator():
                         print(f"🔄 Hermes streaming started...")
                         yielded_any = False
+                        token_count = 0
                         
                         try:
                             for chunk in response:
@@ -694,23 +710,27 @@ class HermesAdapter(ModelAdapter):
                                 elif isinstance(chunk, dict):
                                     token = chunk.get('choices', [{}])[0].get('text', '')
                                 else:
-                                    token = str(chunk)
-                                    
-                                if token:
-                                    yielded_any = True
+                                    token = str(chunk) if chunk is not None else ''
+                                
+                                # FIXED: Yield all tokens including empty/whitespace (only filter None)
+                                if token is not None:
+                                    token_count += 1
+                                    print(f"  📦 Hermes token {token_count}: {repr(token[:50]) if token else '(empty)'}")
+                                    if token:  # Track non-empty tokens
+                                        yielded_any = True
                                     yield token
                         except StopIteration:
                             pass
                         
-                        # Fallback if no tokens yielded
+                        # Fallback if no real tokens yielded
                         if not yielded_any:
-                            print(f"  ⚠️  Hermes: 0 tokens! Using fallback...")
+                            print(f"  ⚠️  Hermes: 0 real tokens! Using fallback...")
                             fallback = self._mock_response(prompt)
                             for word in fallback.split():
                                 yield word + " "
                             print(f"  ✅ Hermes fallback complete")
                         else:
-                            print(f"  ✅ Hermes streaming done")
+                            print(f"  ✅ Hermes streaming done: {token_count} tokens")
                     
                     return streaming_generator()
                 else:
