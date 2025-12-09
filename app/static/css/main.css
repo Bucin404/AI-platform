@@ -745,6 +745,21 @@ pre code {
     }
 }
 
+/* How It Works Grid */
+.how-it-works-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .how-it-works-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;
