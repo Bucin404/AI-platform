@@ -351,7 +351,15 @@ class MistralAdapter(ModelAdapter):
                         
                         try:
                             for chunk in response:
-                                token = chunk['choices'][0]['text']
+                                # Handle llama-cpp-python streaming format
+                                # Streaming may return tokens directly or in dict format
+                                if isinstance(chunk, str):
+                                    token = chunk
+                                elif isinstance(chunk, dict):
+                                    token = chunk.get('choices', [{}])[0].get('text', '')
+                                else:
+                                    token = str(chunk)
+                                
                                 token_count += 1
                                 
                                 if token:
@@ -471,7 +479,14 @@ class CodeLlamaAdapter(ModelAdapter):
                         
                         try:
                             for chunk in response:
-                                token = chunk['choices'][0]['text']
+                                # Handle llama-cpp-python streaming format
+                                if isinstance(chunk, str):
+                                    token = chunk
+                                elif isinstance(chunk, dict):
+                                    token = chunk.get('choices', [{}])[0].get('text', '')
+                                else:
+                                    token = str(chunk)
+                                    
                                 if token:
                                     yielded_any = True
                                     yield token
@@ -566,7 +581,14 @@ class Llama3Adapter(ModelAdapter):
                         
                         try:
                             for chunk in response:
-                                token = chunk['choices'][0]['text']
+                                # Handle llama-cpp-python streaming format
+                                if isinstance(chunk, str):
+                                    token = chunk
+                                elif isinstance(chunk, dict):
+                                    token = chunk.get('choices', [{}])[0].get('text', '')
+                                else:
+                                    token = str(chunk)
+                                    
                                 if token:
                                     yielded_any = True
                                     yield token
@@ -661,7 +683,14 @@ class HermesAdapter(ModelAdapter):
                         
                         try:
                             for chunk in response:
-                                token = chunk['choices'][0]['text']
+                                # Handle llama-cpp-python streaming format
+                                if isinstance(chunk, str):
+                                    token = chunk
+                                elif isinstance(chunk, dict):
+                                    token = chunk.get('choices', [{}])[0].get('text', '')
+                                else:
+                                    token = str(chunk)
+                                    
                                 if token:
                                     yielded_any = True
                                     yield token
