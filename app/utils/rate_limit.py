@@ -8,8 +8,18 @@ logger = logging.getLogger(__name__)
 
 
 def check_rate_limit(user):
-    """Check if user has exceeded rate limit."""
-    # Get user's rate limit
+    """Check if user has exceeded rate limit.
+    
+    Free users: No rate limit (unlimited messages with basic features)
+    Premium/Admin: Tracked for statistics only, no blocking
+    """
+    # Free users have unlimited messages (no rate limit)
+    if user.tier == 'free':
+        logger.info(f"Free user {user.id}: No rate limit applied")
+        return True, None
+    
+    # For premium/admin users: track usage but don't block
+    # (keeping limits for statistics and monitoring only)
     limit = user.get_rate_limit()
     
     # Count messages in the last hour
@@ -20,10 +30,11 @@ def check_rate_limit(user):
         Message.created_at >= one_hour_ago
     ).count()
     
+    # Log usage but don't block (soft limit for monitoring)
     if message_count >= limit:
-        logger.warning(f"Rate limit exceeded for user {user.id} ({user.tier}): {message_count}/{limit}")
-        return False, f"Rate limit exceeded. You can send {limit} messages per hour. Please try again later."
+        logger.info(f"User {user.id} ({user.tier}) reached soft limit: {message_count}/{limit}")
     
+    # Always allow messages (no blocking for any tier now)
     return True, None
 
 
