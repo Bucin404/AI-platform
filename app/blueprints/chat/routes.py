@@ -295,6 +295,17 @@ def get_session_messages(session_id):
         return jsonify({'error': str(e)}), 500
 
 
+@chat_bp.route('/current_session')
+@login_required
+def get_current_session():
+    """Get or create current active session."""
+    try:
+        session = get_or_create_session(current_user.id)
+        return jsonify({'session_id': session.id})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @chat_bp.route('/models')
 @login_required
 def get_models():

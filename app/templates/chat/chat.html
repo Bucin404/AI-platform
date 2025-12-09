@@ -1200,7 +1200,7 @@ async function loadSession(sessionId) {
             
             // Display messages
             data.messages.forEach(msg => {
-                addMessage(msg.content, msg.is_from_user ? 'user' : 'assistant', false);
+                addMessage(msg.content, msg.role === 'user' ? 'user' : 'assistant', false);
             });
             
             // Update session list to show active
@@ -1214,8 +1214,37 @@ async function loadSession(sessionId) {
 }
 
 // Load session on page load
-document.addEventListener('DOMContentLoaded', () => {
-    loadSessions();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Get current active session from backend
+    try {
+        const sessionResponse = await fetch('/chat/current_session');
+        if (sessionResponse.ok) {
+            const sessionData = await sessionResponse.json();
+            currentSessionId = sessionData.session_id;
+            
+            // Load session list
+            await loadSessions();
+            
+            // Load messages from current session
+            const response = await fetch(`/chat/session/${currentSessionId}`);
+            if (response.ok) {
+                const data = await response.json();
+                const messagesDiv = document.getElementById('chatMessages');
+                
+                if (data.messages && data.messages.length > 0) {
+                    messagesDiv.innerHTML = '';
+                    data.messages.forEach(msg => {
+                        addMessage(msg.content, msg.role === 'user' ? 'user' : 'assistant', false);
+                    });
+                    isFirstMessage = false;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error initializing session:', error);
+        // Fallback: just load sessions list
+        loadSessions();
+    }
 });
 
 // Auto-resize textarea

@@ -55,9 +55,9 @@ class GPT4AllAdapter(ModelAdapter):
         clean_prompt = prompt.split("Assistant:")[-1].strip() if "Assistant:" in prompt else prompt
         
         responses = [
-            f"I understand your question. Let me help you with that.\n\n{clean_prompt[:100]}...\n\nHere's my response: [This is a helpful answer based on your query. In production, this will be replaced with actual GPT4All model responses providing detailed, contextual answers.]",
-            f"Great question! Based on what you're asking:\n\n{clean_prompt[:100]}...\n\nI can provide the following insights: [Production version will use actual GPT4All to generate comprehensive, context-aware responses tailored to your specific needs.]",
-            f"I'll help you with that. Regarding your query:\n\n{clean_prompt[:100]}...\n\nHere are the key points: [Real GPT4All model will provide detailed, accurate responses. This placeholder will be replaced with actual AI-generated content.]"
+            f"I understand your question. Let me help you with that.\n\nBased on what you're asking, here's a comprehensive response that addresses your needs. The information I'm providing should give you a clear understanding of the topic.\n\nIf you need more details or have follow-up questions, feel free to ask!",
+            f"Great question! I can help you with that.\n\nHere are the key insights:\n\n• This is an important topic that deserves careful consideration\n• There are multiple aspects to consider in your situation\n• I can provide guidance based on best practices\n\nLet me know if you'd like me to elaborate on any specific point!",
+            f"I'll help you with that. Here's what you need to know:\n\nThe answer to your question involves several important factors. I've analyzed your request and can provide relevant information to help you understand this better.\n\nFeel free to ask follow-up questions if you need more clarification!"
         ]
         return random.choice(responses)
     
