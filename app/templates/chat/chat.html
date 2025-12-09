@@ -296,7 +296,7 @@ body.chat-page footer {
 
 /* Modern Input Area */
 .chat-input-area {
-    padding: 20px 32px 32px;
+    padding: 16px 24px;
     background: white;
     border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
@@ -305,10 +305,10 @@ body.chat-page footer {
     display: flex;
     align-items: flex-end;
     gap: 12px;
-    padding: 16px 20px;
+    padding: 10px 16px;
     background: rgba(102, 126, 234, 0.04);
     border: 2px solid rgba(102, 126, 234, 0.1);
-    border-radius: 16px;
+    border-radius: 12px;
     transition: all 0.3s ease;
 }
 
@@ -326,9 +326,11 @@ body.chat-page footer {
     line-height: 1.5;
     color: #1d2131;
     resize: none;
-    max-height: 150px;
+    min-height: 24px;
+    max-height: 120px;
     outline: none;
     font-family: inherit;
+    padding: 4px 0;
 }
 
 .chat-input::placeholder {

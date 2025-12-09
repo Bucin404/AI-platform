@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{{ t.platform_name }} - {{ t.platform_tagline }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}{{ t.platform_name }}{% endblock %}</title>
     
     <!-- Custom CSS -->
@@ -253,8 +254,18 @@
     <!-- Ultra-Modern Navigation -->
     <nav class="modern-nav">
         <div class="nav-container">
-            <a href="{{ url_for('main.index') }}" class="nav-logo">
-                {{ t.platform_name }}
+            <a href="{{ url_for('main.index') }}" class="nav-logo" style="display: flex; align-items: center; gap: 10px;">
+                <!-- AI Smooht Logo -->
+                <svg class="brand-logo" width="32" height="32" viewBox="0 0 24 24" style="transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1) rotate(5deg)'" onmouseout="this.style.transform='scale(1) rotate(0deg)'">
+                    <defs>
+                        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="url(#logoGradient)" stroke="none"/>
+                </svg>
+                <span>{{ t.platform_name }}</span>
             </a>
             
             <div class="nav-menu">
