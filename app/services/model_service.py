@@ -334,11 +334,11 @@ class MistralAdapter(ModelAdapter):
                 response = self.model(
                     formatted_prompt,
                     max_tokens=512,  # Increased for better responses
-                    temperature=0.8,  # Higher for better generation
-                    top_p=0.9,
-                    top_k=40,
-                    repeat_penalty=1.1,
-                    stop=["</s>", "[INST]"],  # Mistral's native stop tokens
+                    temperature=0.7,  # Standard temperature
+                    top_p=0.95,  # Higher for more diverse output
+                    top_k=50,  # Increased for better generation
+                    repeat_penalty=1.05,  # Lower to allow more natural speech
+                    stop=[],  # NO STOP TOKENS - let model decide when to stop
                     echo=False,
                     stream=stream  # Enable streaming if requested
                 )
