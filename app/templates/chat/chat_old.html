@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.nav_chat }} - {{ t.platform_name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-sidebar">
+        <h2>{{ t.nav_chat }}</h2>
+        <button class="btn btn-primary new-chat-btn" onclick="newChat()">New Chat</button>
+        <div class="chat-history">
+            <!-- Chat history will be loaded here -->
+        </div>
+    </div>
+    
+    <div class="chat-main">
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h1>{{ t.welcome_message }}</h1>
+                <p>{{ t.platform_tagline }}</p>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <select id="modelSelect" class="model-select">
+                    <option value="auto">Auto-Select</option>
+                    <option value="deepseek">DeepSeek Coder</option>
+                    <option value="llama">Llama 2</option>
+                    <option value="gpt4all">GPT4All</option>
+                    <option value="vicuna">Vicuna</option>
+                </select>
+                <textarea id="messageInput" class="chat-input" placeholder="Type your message..." rows="1"></textarea>
+                <button id="sendButton" class="send-button" onclick="sendMessage()">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const model = document.getElementById('modelSelect').value;
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message to chat
+    addMessage('user', message);
+    input.value = '';
+    
+    // Send to server
+    fetch('/chat/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: message,
+            model: model
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.response) {
+            addMessage('assistant', data.response);
+        } else if (data.error) {
+            addMessage('error', data.error);
+        }
+    })
+    .catch(error => {
+        addMessage('error', 'Failed to send message');
+    });
+}
+
+function addMessage(role, content) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message message-${role}`;
+    messageDiv.textContent = content;
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function newChat() {
+    document.getElementById('chatMessages').innerHTML = '<div class="welcome-message"><h1>{{ t.welcome_message }}</h1><p>{{ t.platform_tagline }}</p></div>';
+}
+
+// Auto-resize textarea
+document.getElementById('messageInput').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+});
+
+// Send on Enter (Shift+Enter for new line)
+document.getElementById('messageInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+</script>
+{% endblock %}

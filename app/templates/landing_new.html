@@ -1,0 +1,610 @@
+{% extends "base.html" %}
+
+{% block title %}AI Smooht - Platform AI Terdepan untuk Bisnis & Kreativitas Anda{% endblock %}
+
+{% block content %}
+<style>
+/* Ultra-Modern Landing Page Styles - Lightweight & Fast */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(180deg, #f8f9fc 0%, #ffffff 100%);
+    overflow-x: hidden;
+}
+
+/* Hero Section - Full Impact */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    top: -250px;
+    right: -250px;
+    animation: float 20s ease-in-out infinite;
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    bottom: -200px;
+    left: -200px;
+    animation: float 15s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    50% { transform: translateY(-20px) translateX(20px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.75; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+.hero-content {
+    max-width: 1200px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    margin-bottom: 2rem;
+    animation: fadeIn 0.6s ease-out;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #4facfe;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+    position: relative;
+}
+
+.pulse-dot::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #4facfe;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 800;
+    color: white;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+    animation: slideUp 0.8s ease-out;
+}
+
+.hero p {
+    font-size: clamp(1.125rem, 2vw, 1.5rem);
+    color: rgba(255,255,255,0.95);
+    max-width: 800px;
+    margin: 0 auto 3rem;
+    line-height: 1.6;
+    animation: fadeIn 1s ease-out;
+}
+
+.cta-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: slideUp 1.2s ease-out;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: white;
+    color: #667eea;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+}
+
+.btn-secondary {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 2px solid white;
+    backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+}
+
+/* Social Proof Section */
+.social-proof {
+    background: white;
+    padding: 3rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid #e4e7f1;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.stat {
+    padding: 1.5rem;
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c7389;
+    font-size: 1.125rem;
+}
+
+/* Features Section */
+.features {
+    padding: 6rem 2rem;
+    background: linear-gradient(180deg, #f8f9fc 0%, #ffffff 100%);
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.section-header h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: #1d2131;
+    margin-bottom: 1rem;
+}
+
+.section-header p {
+    font-size: 1.25rem;
+    color: #6c7389;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+}
+
+.feature-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
+}
+
+.feature-icon svg {
+    width: 32px;
+    height: 32px;
+    color: white;
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1d2131;
+    margin-bottom: 1rem;
+}
+
+.feature-card p {
+    color: #6c7389;
+    line-height: 1.6;
+}
+
+/* Testimonials Section */
+.testimonials {
+    padding: 6rem 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.testimonial-card {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.testimonial-text {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.author-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.author-info h4 {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.author-info p {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+/* Final CTA Section */
+.final-cta {
+    padding: 6rem 2rem;
+    text-align: center;
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%);
+}
+
+.final-cta h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: #1d2131;
+    margin-bottom: 1rem;
+}
+
+.final-cta p {
+    font-size: 1.25rem;
+    color: #6c7389;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.urgency-badge {
+    display: inline-flex;
+    align-items: center;
+    background: #ffd93d;
+    color: #1d2131;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero {
+        min-height: 90vh;
+        padding: 1rem;
+    }
+    
+    .features-grid,
+    .testimonials-grid,
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .cta-group {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+</style>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="badge">
+            <div class="pulse-dot"></div>
+            <span style="color: white; font-weight: 600;">🚀 Lebih dari 10,000+ Pengguna Aktif</span>
+        </div>
+        
+        <h1>Platform AI Tercepat & Tercerdas di Indonesia</h1>
+        
+        <p>
+            Tingkatkan produktivitas hingga 300% dengan AI terpintar 2024. 
+            Dukung pekerjaan, coding, analisis dokumen, dan kreativitas Anda dengan 4 model AI terbaik yang terintegrasi sempurna.
+        </p>
+        
+        <div class="cta-group">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
+                🎁 Mulai GRATIS Sekarang
+            </a>
+            <a href="{{ url_for('main.about') }}" class="btn btn-secondary">
+                📖 Lihat Demo
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Social Proof -->
+<section class="social-proof">
+    <div class="stats-grid">
+        <div class="stat">
+            <div class="stat-number">10,000+</div>
+            <div class="stat-label">Pengguna Aktif</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">4.9/5.0</div>
+            <div class="stat-label">Rating Pengguna</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">&lt;2s</div>
+            <div class="stat-label">Waktu Respons</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">99.9%</div>
+            <div class="stat-label">Uptime</div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+    <div class="section-header">
+        <h2>Fitur Unggulan yang Bikin Bisnis Anda Terbang 🚀</h2>
+        <p>Semua yang Anda butuhkan untuk produktivitas maksimal</p>
+    </div>
+    
+    <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <h3>⚡ Respons Real-Time</h3>
+            <p>
+                Streaming token-by-token seperti ChatGPT. 
+                Lihat respon AI muncul secara instan tanpa menunggu!
+            </p>
+        </div>
+        
+        <!-- Feature 2 -->
+        <div class="feature-card">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+            <h3>🛡️ 4 Model AI Terbaik</h3>
+            <p>
+                Mistral, CodeLlama, Llama-3, OpenHermes terintegrasi. 
+                Otomatis pilih model terbaik untuk setiap tugas!
+            </p>
+        </div>
+        
+        <!-- Feature 3 -->
+        <div class="feature-card">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+            <h3>💻 Coding Assistant Pro</h3>
+            <p>
+                Generate code Python, JavaScript, Java dan lebih. 
+                Debug, optimasi, dan dokumentasi otomatis!
+            </p>
+        </div>
+        
+        <!-- Feature 4 -->
+        <div class="feature-card">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <h3>📄 Analisis Dokumen</h3>
+            <p>
+                Upload dokumen panjang, dapatkan ringkasan dan insight mendalam dalam sekejap!
+            </p>
+        </div>
+        
+        <!-- Feature 5 -->
+        <div class="feature-card">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3>🧠 Memori Penuh</h3>
+            <p>
+                AI ingat semua percakapan dalam sesi. 
+                Diskusi lebih natural dan kontekstual!
+            </p>
+        </div>
+        
+        <!-- Feature 6 -->
+        <div class="feature-card">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                </svg>
+            </div>
+            <h3>🌍 Bilingual Support</h3>
+            <p>
+                Lancar dalam Bahasa Indonesia dan English. 
+                Respon otomatis sesuai bahasa input Anda!
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+    <div class="section-header" style="margin-bottom: 3rem;">
+        <h2 style="color: white;">Apa Kata Pengguna Kami? 💬</h2>
+        <p style="color: rgba(255,255,255,0.9);">Ribuan profesional sudah merasakan manfaatnya</p>
+    </div>
+    
+    <div class="testimonials-grid">
+        <div class="testimonial-card">
+            <div class="testimonial-text">
+                "AI Smooht menghemat 5 jam kerja saya setiap hari! Coding assistant-nya luar biasa akurat dan cepat."
+            </div>
+            <div class="testimonial-author">
+                <div class="author-avatar">AS</div>
+                <div class="author-info">
+                    <h4>Andi Setiawan</h4>
+                    <p>Senior Developer, TechCorp</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testimonial-card">
+            <div class="testimonial-text">
+                "Untuk analisis dokumen dan riset, ini jauh lebih cepat dari platform lain. ROI-nya incredible!"
+            </div>
+            <div class="testimonial-author">
+                <div class="author-avatar">SM</div>
+                <div class="author-info">
+                    <h4>Siti Maharani</h4>
+                    <p>Content Strategist, MediaHub</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testimonial-card">
+            <div class="testimonial-text">
+                "Real-time streaming bikin brainstorming jadi super produktif. Tim kami jadi lebih efisien 200%!"
+            </div>
+            <div class="testimonial-author">
+                <div class="author-avatar">BP</div>
+                <div class="author-info">
+                    <h4>Budi Prasetyo</h4>
+                    <p>CEO, Startup Innovate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA -->
+<section class="final-cta">
+    <div class="urgency-badge">
+        ⏰ Terbatas! Akses Premium GRATIS untuk 1000 Pengguna Pertama
+    </div>
+    
+    <h2>Siap Tingkatkan Produktivitas 300%?</h2>
+    
+    <p>
+        Bergabunglah dengan ribuan profesional yang sudah merasakan keajaiban AI. 
+        Gratis tanpa kartu kredit. Mulai dalam 30 detik!
+    </p>
+    
+    <div class="cta-group">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="font-size: 1.25rem; padding: 1.25rem 3rem;">
+            🚀 Daftar GRATIS Sekarang
+        </a>
+    </div>
+    
+    <p style="margin-top: 1.5rem; font-size: 0.875rem; color: #9fa6bc;">
+        ✓ No Credit Card Required  ✓ Setup in 30 Seconds  ✓ Cancel Anytime
+    </p>
+</section>
+
+{% endblock %}
