@@ -581,17 +581,23 @@ class HermesAdapter(ModelAdapter):
 
 
 # Initialize models - NEW BEST MODELS ONLY (2024)
+# Create single instances of each model (load only once)
+mistral_model = MistralAdapter()
+codellama_model = CodeLlamaAdapter()
+llama3_model = Llama3Adapter()
+hermes_model = HermesAdapter()
+
 MODELS = {
-    # New best models (2024) - ONLY THESE ARE USED
-    'mistral': MistralAdapter(),
-    'codellama': CodeLlamaAdapter(),
-    'llama3': Llama3Adapter(),
-    'hermes': HermesAdapter(),
-    # Aliases for backwards compatibility (route to new models)
-    'llama': Llama3Adapter(),  # Route old llama to llama3
-    'gpt4all': MistralAdapter(),  # Route old gpt4all to mistral
-    'deepseek': CodeLlamaAdapter(),  # Route old deepseek to codellama
-    'vicuna': HermesAdapter()  # Route old vicuna to hermes
+    # New best models (2024) - Primary names
+    'mistral': mistral_model,
+    'codellama': codellama_model,
+    'llama3': llama3_model,
+    'hermes': hermes_model,
+    # Aliases for backwards compatibility (use same instances - no duplication)
+    'llama': llama3_model,  # Route old llama to llama3
+    'gpt4all': mistral_model,  # Route old gpt4all to mistral
+    'deepseek': codellama_model,  # Route old deepseek to codellama
+    'vicuna': hermes_model  # Route old vicuna to hermes
 }
 
 
