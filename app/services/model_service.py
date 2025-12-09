@@ -864,19 +864,24 @@ def get_model_response(prompt, model_name='auto', user=None, history=None):
     print(f"User prompt: {prompt}")
     print(f"Requested model: {model_name}")
     
-    # Build context from history if provided
+    # Build context from history if provided - ONLY USER MESSAGES
     if history:
-        context_messages = []
-        for msg in history[-10:]:  # Last 10 messages for context
+        # Only include recent user messages for context, NOT assistant responses
+        user_messages = []
+        for msg in history[-5:]:  # Last 5 messages for context (reduced for clarity)
             role = msg.get('role', 'user')
             content = msg.get('content', '')
-            if role == 'user':
-                context_messages.append(f"User: {content}")
-            else:
-                context_messages.append(f"Assistant: {content}")
+            # ONLY add user messages to context, skip assistant responses
+            if role == 'user' and content.strip():
+                user_messages.append(content)
         
-        # Combine context with current prompt - THIS GOES DIRECTLY TO AI
-        full_prompt = "\n".join(context_messages) + f"\nUser: {prompt}\nAssistant:"
+        # If we have previous user messages, add them as context
+        if user_messages:
+            context = "Previous questions: " + " | ".join(user_messages)
+            full_prompt = f"{context}\n\nCurrent question:\nUser: {prompt}\nAssistant:"
+        else:
+            # No previous user context, just current prompt
+            full_prompt = f"User: {prompt}\nAssistant:"
     else:
         # User's prompt goes DIRECTLY to AI model
         full_prompt = f"User: {prompt}\nAssistant:"
