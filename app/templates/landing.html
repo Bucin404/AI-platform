@@ -3,124 +3,269 @@
 {% block title %}AI Platform - Open Source AI Chat{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+<div class="min-h-screen">
     <!-- Navigation -->
-    <nav class="bg-white dark:bg-gray-800 shadow-lg">
+    <nav class="fixed w-full top-0 z-50 glass backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/20 dark:border-gray-700/20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <span class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">AI Platform</span>
+            <div class="flex justify-between h-20">
+                <div class="flex items-center space-x-3 animate-fade-in">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">AI Platform</span>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <a href="{{ url_for('main.about') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">About</a>
-                    <a href="{{ url_for('main.faq') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">FAQ</a>
-                    <a href="{{ url_for('main.pricing') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">Pricing</a>
-                    <a href="{{ url_for('auth.login') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">Login</a>
-                    <a href="{{ url_for('auth.register') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Sign Up</a>
+                <div class="flex items-center space-x-8">
+                    <a href="{{ url_for('main.about') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all hover:scale-105">About</a>
+                    <a href="{{ url_for('main.faq') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all hover:scale-105">FAQ</a>
+                    <a href="{{ url_for('main.pricing') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all hover:scale-105">Pricing</a>
+                    <a href="{{ url_for('auth.login') }}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all hover:scale-105">Login</a>
+                    <a href="{{ url_for('auth.register') }}" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2.5 rounded-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 font-semibold">Sign Up Free</a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div class="text-center">
-            <h1 class="text-5xl font-extrabold text-gray-900 dark:text-white sm:text-6xl">
-                AI-Powered Chat Platform
+    <div class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <!-- Animated background elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-30 animate-pulse-slow"></div>
+            <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-300 dark:bg-indigo-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-300 dark:bg-pink-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse-slow" style="animation-delay: 4s;"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto text-center relative z-10">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-semibold mb-8 animate-slide-up border border-indigo-200 dark:border-indigo-800">
+                <span class="relative flex h-2 w-2 mr-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                ✨ Now with intelligent model routing
+            </div>
+            
+            <h1 class="text-6xl md:text-7xl lg:text-8xl font-black text-gray-900 dark:text-white mb-8 animate-fade-in leading-tight">
+                Next-Gen
+                <span class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent block mt-2">
+                    AI Chat Platform
+                </span>
             </h1>
-            <p class="mt-6 text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                Intelligent model routing for coding, documents, images, and general tasks. 
-                Open-source AI models tailored to your needs.
+            
+            <p class="mt-8 text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed animate-slide-up">
+                Experience the power of <span class="font-semibold text-indigo-600 dark:text-indigo-400">specialized AI models</span> that automatically adapt to your needs. 
+                From coding to documents, images to chat — all in one platform.
             </p>
-            <div class="mt-10 flex justify-center space-x-4">
-                <a href="{{ url_for('auth.register') }}" class="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition shadow-lg">
-                    Get Started Free
+            
+            <div class="mt-12 flex flex-col sm:flex-row justify-center gap-4 animate-slide-up">
+                <a href="{{ url_for('auth.register') }}" class="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl text-lg font-bold hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden">
+                    <span class="relative z-10 flex items-center justify-center">
+                        Start Free Today
+                        <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
+                    </span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </a>
-                <a href="{{ url_for('main.about') }}" class="bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-lg transition border-2 border-indigo-600">
-                    Learn More
+                <a href="{{ url_for('main.about') }}" class="group px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-2xl text-lg font-bold hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                    View Demo
+                    <svg class="w-5 h-5 ml-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
                 </a>
+            </div>
+            
+            <div class="mt-16 flex items-center justify-center space-x-8 text-sm text-gray-600 dark:text-gray-400 animate-fade-in">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>Free to start</span>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>No credit card</span>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>Open source</span>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Features Section -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-            Specialized AI Models
-        </h2>
-        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
-                <div class="text-4xl mb-4">💻</div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">DeepSeek Coder</h3>
-                <p class="text-gray-600 dark:text-gray-300">Specialized for coding, debugging, and programming tasks with advanced code understanding.</p>
+    <div class="py-24 px-4 sm:px-6 lg:px-8 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                    Specialized AI Models
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Each task gets the perfect model. Automatically.
+                </p>
             </div>
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
-                <div class="text-4xl mb-4">📄</div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Llama.cpp</h3>
-                <p class="text-gray-600 dark:text-gray-300">Optimized for document processing, PDFs, and large file analysis.</p>
-            </div>
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
-                <div class="text-4xl mb-4">🎨</div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Vicuna Vision</h3>
-                <p class="text-gray-600 dark:text-gray-300">Multimodal AI for images, videos, and rich media content analysis.</p>
-            </div>
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
-                <div class="text-4xl mb-4">💬</div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">GPT4All</h3>
-                <p class="text-gray-600 dark:text-gray-300">General-purpose conversational AI for everyday tasks and questions.</p>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="group relative p-8 bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/20 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500"></div>
+                    <div class="relative">
+                        <div class="text-5xl mb-4 transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">💻</div>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">DeepSeek Coder</h3>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Specialized for coding, debugging, and programming tasks with advanced code understanding.</p>
+                        <div class="mt-4 flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-semibold">
+                            <span>For developers</span>
+                            <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group relative p-8 bg-gradient-to-br from-white to-purple-50 dark:from-gray-800 dark:to-purple-900/20 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-400/20 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500"></div>
+                    <div class="relative">
+                        <div class="text-5xl mb-4 transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">📄</div>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Llama.cpp</h3>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Optimized for document processing, PDFs, and large file analysis with precision.</p>
+                        <div class="mt-4 flex items-center text-sm text-purple-600 dark:text-purple-400 font-semibold">
+                            <span>For documents</span>
+                            <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group relative p-8 bg-gradient-to-br from-white to-pink-50 dark:from-gray-800 dark:to-pink-900/20 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-pink-400/20 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500"></div>
+                    <div class="relative">
+                        <div class="text-5xl mb-4 transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">🎨</div>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Vicuna Vision</h3>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Multimodal AI for images, videos, and rich media content analysis.</p>
+                        <div class="mt-4 flex items-center text-sm text-pink-600 dark:text-pink-400 font-semibold">
+                            <span>For media</span>
+                            <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group relative p-8 bg-gradient-to-br from-white to-green-50 dark:from-gray-800 dark:to-green-900/20 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400/20 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500"></div>
+                    <div class="relative">
+                        <div class="text-5xl mb-4 transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">💬</div>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">GPT4All</h3>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">General-purpose conversational AI for everyday tasks and questions.</p>
+                        <div class="mt-4 flex items-center text-sm text-green-600 dark:text-green-400 font-semibold">
+                            <span>For chat</span>
+                            <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- How It Works -->
-    <div class="bg-white dark:bg-gray-800 py-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-                How It Works
-            </h2>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="text-center">
-                    <div class="bg-indigo-100 dark:bg-indigo-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">1</span>
+    <div class="py-24 px-4 sm:px-6 lg:px-8 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                    How It Works
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Three simple steps to AI-powered productivity
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="text-center group">
+                    <div class="relative inline-block mb-6">
+                        <div class="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 animate-pulse"></div>
+                        <div class="relative bg-gradient-to-br from-indigo-500 to-purple-600 w-24 h-24 rounded-3xl flex items-center justify-center shadow-2xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                            <span class="text-4xl font-black text-white">1</span>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Ask Your Question</h3>
-                    <p class="text-gray-600 dark:text-gray-300">Type your message or upload your files</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Ask Your Question</h3>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Type your message, upload files, or describe your task. Our platform understands context.</p>
                 </div>
-                <div class="text-center">
-                    <div class="bg-indigo-100 dark:bg-indigo-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">2</span>
+                
+                <div class="text-center group">
+                    <div class="relative inline-block mb-6">
+                        <div class="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 animate-pulse" style="animation-delay: 0.5s;"></div>
+                        <div class="relative bg-gradient-to-br from-purple-500 to-pink-600 w-24 h-24 rounded-3xl flex items-center justify-center shadow-2xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                            <span class="text-4xl font-black text-white">2</span>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Auto-Route to Best Model</h3>
-                    <p class="text-gray-600 dark:text-gray-300">Our system selects the optimal AI model</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Auto-Route to Best Model</h3>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Our intelligent system instantly selects the optimal AI model for your specific task.</p>
                 </div>
-                <div class="text-center">
-                    <div class="bg-indigo-100 dark:bg-indigo-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">3</span>
+                
+                <div class="text-center group">
+                    <div class="relative inline-block mb-6">
+                        <div class="absolute inset-0 bg-gradient-to-r from-pink-400 to-red-400 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 animate-pulse" style="animation-delay: 1s;"></div>
+                        <div class="relative bg-gradient-to-br from-pink-500 to-red-600 w-24 h-24 rounded-3xl flex items-center justify-center shadow-2xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                            <span class="text-4xl font-black text-white">3</span>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Get Accurate Response</h3>
-                    <p class="text-gray-600 dark:text-gray-300">Receive tailored, high-quality answers</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Get Accurate Response</h3>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Receive tailored, high-quality answers powered by specialized AI expertise.</p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- CTA Section -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-            Ready to Get Started?
-        </h2>
-        <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
-            Join thousands of users leveraging specialized AI models
-        </p>
-        <a href="{{ url_for('auth.register') }}" class="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition shadow-lg inline-block">
-            Create Free Account
-        </a>
+    <div class="py-24 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 opacity-5 dark:opacity-10"></div>
+        <div class="max-w-4xl mx-auto relative z-10">
+            <h2 class="text-5xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 leading-tight">
+                Ready to Transform Your Workflow?
+            </h2>
+            <p class="text-2xl text-gray-600 dark:text-gray-300 mb-12 leading-relaxed">
+                Join thousands of users leveraging specialized AI models for <span class="text-indigo-600 dark:text-indigo-400 font-semibold">smarter, faster</span> results.
+            </p>
+            <a href="{{ url_for('auth.register') }}" class="group inline-flex items-center px-12 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl text-xl font-bold hover:shadow-2xl hover:scale-105 transition-all duration-300 relative overflow-hidden">
+                <span class="relative z-10 flex items-center">
+                    Create Free Account
+                    <svg class="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                    </svg>
+                </span>
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </a>
+            <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">
+                No credit card required • Free forever • Upgrade anytime
+            </p>
+        </div>
     </div>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>&copy; 2024 AI Platform. Open Source AI Chat Platform.</p>
+    <footer class="bg-gray-900 dark:bg-black text-white py-12 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xl font-bold">AI Platform</span>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400 text-sm">&copy; 2024 AI Platform. Open Source AI Chat Platform.</p>
+                    <p class="text-gray-500 text-xs mt-1">Built with ❤️ for developers and creators</p>
+                </div>
+            </div>
         </div>
     </footer>
 </div>

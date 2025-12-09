@@ -3,106 +3,223 @@
 {% block title %}Chat - AI Platform{% endblock %}
 
 {% block content %}
-<div class="flex h-screen bg-gray-100 dark:bg-gray-900" id="app">
+<div class="flex h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" id="app">
     <!-- Sidebar -->
-    <div class="w-64 bg-gray-900 text-white flex flex-col">
-        <div class="p-4 border-b border-gray-700">
-            <h1 class="text-xl font-bold">AI Platform</h1>
-            <p class="text-sm text-gray-400">{{ current_user.username }}</p>
+    <div class="w-72 bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col shadow-2xl">
+        <!-- Header -->
+        <div class="p-6 border-b border-gray-700/50 backdrop-blur-sm">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold">AI Platform</h1>
+                    <p class="text-xs text-gray-400">{{ current_user.username }}</p>
+                </div>
+            </div>
+            <button onclick="newChat()" class="w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:scale-105 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <span>New Chat</span>
+            </button>
         </div>
         
+        <!-- Navigation -->
         <nav class="flex-1 overflow-y-auto p-4 space-y-2">
-            <button onclick="newChat()" class="w-full text-left px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition">
-                + New Chat
-            </button>
-            <a href="{{ url_for('main.pricing') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-800 transition">
-                {% if current_user.is_premium() %}
-                    ✨ Premium ({{ current_user.tier }})
-                {% else %}
-                    Upgrade to Premium
-                {% endif %}
+            <a href="{{ url_for('main.pricing') }}" class="group block px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 backdrop-blur-sm">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                        {% if current_user.is_premium() %}
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                        {% else %}
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-semibold">
+                            {% if current_user.is_premium() %}
+                                Premium Active
+                            {% else %}
+                                Upgrade to Premium
+                            {% endif %}
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            {% if current_user.is_premium() %}
+                                {{ current_user.tier }}
+                            {% else %}
+                                Unlock more features
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </a>
-            <a href="{{ url_for('main.about') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-800 transition">
-                About
+            
+            <a href="{{ url_for('main.about') }}" class="block px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 flex items-center space-x-3">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>About</span>
             </a>
-            <a href="{{ url_for('main.faq') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-800 transition">
-                FAQ
+            
+            <a href="{{ url_for('main.faq') }}" class="block px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 flex items-center space-x-3">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>FAQ</span>
             </a>
+            
             {% if current_user.is_admin() %}
-            <a href="{{ url_for('admin.index') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-800 transition">
-                👑 Admin Panel
+            <a href="{{ url_for('admin.index') }}" class="block px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 hover:bg-purple-600/30 transition-all duration-200 flex items-center space-x-3">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                <span class="font-semibold">Admin Panel</span>
             </a>
             {% endif %}
         </nav>
         
-        <div class="p-4 border-t border-gray-700 space-y-2">
-            <div class="text-sm text-gray-400">
-                <span id="usage-info">Loading usage...</span>
+        <!-- Footer -->
+        <div class="p-4 border-t border-gray-700/50 space-y-3 backdrop-blur-sm">
+            <div class="px-4 py-3 rounded-xl bg-white/5 backdrop-blur-sm">
+                <div class="text-xs text-gray-400 mb-1">Usage Today</div>
+                <div class="text-sm font-semibold" id="usage-info">Loading...</div>
             </div>
-            <button onclick="toggleDarkMode()" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-800 transition">
-                🌓 Dark/Light Mode
+            
+            <button onclick="toggleDarkMode()" class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 flex items-center space-x-3">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+                <span>Dark / Light Mode</span>
             </button>
-            <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-800 transition text-red-400">
-                Logout
+            
+            <a href="{{ url_for('auth.logout') }}" class="block px-4 py-3 rounded-xl hover:bg-red-500/10 transition-all duration-200 text-red-400 hover:text-red-300 flex items-center space-x-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                <span>Logout</span>
             </a>
         </div>
     </div>
     
     <!-- Main Chat Area -->
-    <div class="flex-1 flex flex-col">
+    <div class="flex-1 flex flex-col bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
         <!-- Header with Model Selector -->
-        <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
+        <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 p-5 flex items-center justify-between shadow-sm">
             <div class="flex items-center space-x-4">
-                <label for="model-select" class="text-sm font-medium text-gray-700 dark:text-gray-300">Model:</label>
-                <select id="model-select" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="auto">Auto-Select (Recommended)</option>
+                <label for="model-select" class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center space-x-2">
+                    <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                    </svg>
+                    <span>AI Model:</span>
+                </label>
+                <select id="model-select" class="px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 font-medium hover:border-indigo-300 cursor-pointer">
+                    <option value="auto">🤖 Auto-Select (Recommended)</option>
                     <!-- Models will be loaded dynamically -->
                 </select>
             </div>
-            <div class="text-sm text-gray-500 dark:text-gray-400" id="model-info">
-                Auto mode will select the best model for your task
+            <div class="flex items-center space-x-3">
+                <div class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-200 dark:border-indigo-800">
+                    <div class="text-xs text-gray-600 dark:text-gray-400" id="model-info">
+                        Auto mode: Intelligent model selection
+                    </div>
+                </div>
             </div>
         </div>
         
         <!-- Chat Messages -->
-        <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4">
-            <div class="text-center text-gray-500 dark:text-gray-400 py-8">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                </svg>
-                <p class="mt-4">Start a conversation with AI</p>
-                <p class="text-sm mt-2">Choose a model or use auto-mode for intelligent routing:</p>
-                <div class="mt-4 text-left max-w-xl mx-auto space-y-2 text-sm">
-                    <p>• <strong>DeepSeek Coder</strong> - For coding and programming tasks</p>
-                    <p>• <strong>Llama.cpp</strong> - For documents and large files</p>
-                    <p>• <strong>Vicuna</strong> - For images and videos</p>
-                    <p>• <strong>GPT4All</strong> - For general chat</p>
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-6">
+            <div class="text-center text-gray-500 dark:text-gray-400 py-12 animate-fade-in">
+                <div class="mb-6">
+                    <div class="w-20 h-20 mx-auto bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-3xl flex items-center justify-center shadow-lg">
+                        <svg class="h-10 w-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Start a conversation with AI</p>
+                <p class="text-sm mb-6">Choose a model or use auto-mode for intelligent routing</p>
+                <div class="max-w-2xl mx-auto grid grid-cols-2 gap-4 text-left text-sm">
+                    <div class="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-xl border border-blue-200 dark:border-blue-800">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <div class="text-2xl">💻</div>
+                            <span class="font-bold text-blue-700 dark:text-blue-400">DeepSeek Coder</span>
+                        </div>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">For coding and programming tasks</p>
+                    </div>
+                    <div class="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 rounded-xl border border-purple-200 dark:border-purple-800">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <div class="text-2xl">📄</div>
+                            <span class="font-bold text-purple-700 dark:text-purple-400">Llama.cpp</span>
+                        </div>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">For documents and large files</p>
+                    </div>
+                    <div class="p-4 bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/10 dark:to-rose-900/10 rounded-xl border border-pink-200 dark:border-pink-800">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <div class="text-2xl">🎨</div>
+                            <span class="font-bold text-pink-700 dark:text-pink-400">Vicuna</span>
+                        </div>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">For images and videos</p>
+                    </div>
+                    <div class="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 rounded-xl border border-green-200 dark:border-green-800">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <div class="text-2xl">💬</div>
+                            <span class="font-bold text-green-700 dark:text-green-400">GPT4All</span>
+                        </div>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">For general chat</p>
+                    </div>
                 </div>
             </div>
         </div>
         
         <!-- Input Area -->
-        <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+        <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-200/50 dark:border-gray-700/50 p-6 shadow-lg">
             <div class="max-w-4xl mx-auto">
-                <form id="chat-form" class="flex space-x-4">
+                <form id="chat-form" class="flex space-x-4 items-end">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <textarea 
-                        id="message-input" 
-                        rows="1" 
-                        class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                        placeholder="Type your message... (Shift+Enter for new line)"
-                        style="min-height: 52px; max-height: 200px;"
-                    ></textarea>
+                    <div class="flex-1 relative">
+                        <textarea 
+                            id="message-input" 
+                            rows="1" 
+                            class="w-full px-6 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
+                            placeholder="Type your message... (Shift+Enter for new line)"
+                            style="min-height: 56px; max-height: 200px;"
+                        ></textarea>
+                        <div class="absolute bottom-2 right-2 text-xs text-gray-400 pointer-events-none">
+                            Press Enter to send
+                        </div>
+                    </div>
                     <button 
                         type="submit" 
                         id="send-button"
-                        class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-2xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:scale-105 flex items-center space-x-2 min-w-[120px] justify-center"
                     >
-                        Send
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        <span>Send</span>
                     </button>
                 </form>
-                <div class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-                    Rate limit: <span id="rate-limit-info">Loading...</span>
+                <div class="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            <span>Powered by open-source AI</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="px-3 py-1 rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 border border-indigo-200 dark:border-indigo-800">
+                            <span class="font-semibold" id="rate-limit-info">Loading...</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -228,13 +345,25 @@ function addMessage(role, content, isLoading = false, model = null, isError = fa
     
     const messageDiv = document.createElement('div');
     messageDiv.id = messageId;
-    messageDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+    messageDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`;
     
-    let bgColor = role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white';
-    if (isError) bgColor = 'bg-red-100 dark:bg-red-900 text-red-900 dark:text-red-100';
+    let bgColor, textColor, borderColor;
+    if (role === 'user') {
+        bgColor = 'bg-gradient-to-r from-indigo-600 to-purple-600';
+        textColor = 'text-white';
+        borderColor = '';
+    } else if (isError) {
+        bgColor = 'bg-red-50 dark:bg-red-900/20';
+        textColor = 'text-red-900 dark:text-red-100';
+        borderColor = 'border-2 border-red-200 dark:border-red-800';
+    } else {
+        bgColor = 'bg-white dark:bg-gray-800';
+        textColor = 'text-gray-900 dark:text-white';
+        borderColor = 'border border-gray-200 dark:border-gray-700 shadow-lg';
+    }
     
     let renderedContent = content;
-    if (!isLoading && role === 'assistant') {
+    if (!isLoading && role === 'assistant' && !isError) {
         renderedContent = marked.parse(content);
         // Highlight code blocks
         setTimeout(() => {
@@ -244,10 +373,19 @@ function addMessage(role, content, isLoading = false, model = null, isError = fa
         }, 100);
     }
     
+    const modelBadge = model ? `
+        <div class="flex items-center space-x-2 mb-2 opacity-75">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+            </svg>
+            <span class="text-xs font-semibold">${model}</span>
+        </div>
+    ` : '';
+    
     messageDiv.innerHTML = `
-        <div class="max-w-3xl px-4 py-3 rounded-lg ${bgColor}">
-            ${model ? `<div class="text-xs opacity-75 mb-1">Model: ${model}</div>` : ''}
-            <div class="prose prose-sm dark:prose-invert max-w-none ${role === 'user' ? 'text-white' : ''}">${renderedContent}</div>
+        <div class="max-w-3xl px-5 py-4 rounded-2xl ${bgColor} ${textColor} ${borderColor} ${role === 'user' ? 'shadow-lg' : ''}">
+            ${modelBadge}
+            <div class="prose prose-sm dark:prose-invert max-w-none ${role === 'user' ? 'text-white prose-headings:text-white prose-p:text-white prose-li:text-white prose-strong:text-white prose-code:text-white' : ''} prose-pre:bg-gray-900 dark:prose-pre:bg-gray-950 prose-pre:shadow-xl">${renderedContent}</div>
         </div>
     `;
     
