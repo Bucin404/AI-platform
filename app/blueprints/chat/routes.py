@@ -106,7 +106,7 @@ def send_message():
         return jsonify({'error': 'Message cannot be empty'}), 400
     
     # Check if model requires premium and user is free
-    premium_models = ['code', 'deepseek', 'document', 'llama', 'image', 'vicuna']
+    premium_models = ['code', 'deepseek', 'document', 'llama', 'image']
     if model_name in premium_models and not current_user.can_use_feature(model_name):
         return jsonify({
             'error': 'This feature requires Premium subscription',
@@ -188,8 +188,8 @@ def stream_message():
     if not user_message:
         return jsonify({'error': 'Message cannot be empty'}), 400
     
-    # Check premium requirements
-    premium_models = ['code', 'deepseek', 'document', 'llama', 'image', 'vicuna']
+    # Check premium requirements (hermes/creative is free, removed from list)
+    premium_models = ['code', 'deepseek', 'document', 'llama', 'image']
     if model_name in premium_models and not current_user.can_use_feature(model_name):
         return jsonify({'error': 'This feature requires Premium subscription', 'upgrade_required': True}), 403
     

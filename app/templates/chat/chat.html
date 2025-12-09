@@ -44,11 +44,11 @@ body.chat-page header {
     margin-left: -280px;
 }
 
-/* Toggle Button */
+/* Toggle Button - Fixed positioning so it's always visible */
 .sidebar-toggle {
-    position: absolute;
+    position: fixed;
     top: 20px;
-    right: -45px;
+    left: 235px;
     width: 40px;
     height: 40px;
     background: rgba(255, 255, 255, 0.95);
@@ -59,8 +59,13 @@ body.chat-page header {
     justify-content: center;
     cursor: pointer;
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     z-index: 101;
+}
+
+.chat-sidebar.collapsed + * .sidebar-toggle,
+body.sidebar-collapsed .sidebar-toggle {
+    left: 15px;
 }
 
 .sidebar-toggle:hover {
@@ -983,14 +988,15 @@ body.chat-page header {
 document.body.classList.add('chat-page');
 </script>
 <div class="chat-layout">
+    <!-- Toggle Button (outside sidebar so it's always visible) -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M15 19l-7-7 7-7"/>
+        </svg>
+    </button>
+    
     <!-- Sidebar -->
     <div class="chat-sidebar" id="chatSidebar">
-        <!-- Toggle Button -->
-        <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M15 19l-7-7 7-7"/>
-            </svg>
-        </button>
         
         <div class="sidebar-header">
             <div class="sidebar-brand">
@@ -1553,6 +1559,7 @@ function removeTypingIndicator() {
 function toggleSidebar() {
     const sidebar = document.getElementById('chatSidebar');
     sidebar.classList.toggle('collapsed');
+    document.body.classList.toggle('sidebar-collapsed');
 }
 
 async function newChat() {
