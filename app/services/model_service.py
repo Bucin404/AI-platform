@@ -351,8 +351,9 @@ class MistralAdapter(ModelAdapter):
                         token = chunk['choices'][0]['text']
                         token_count += 1
                         print(f"  📦 Chunk {token_count}: {repr(token[:50])}, empty: {not token}")
-                        if token:
-                            yield token
+                        # CRITICAL: Yield ALL chunks, including empty ones!
+                        # llama.cpp returns chunks with empty strings as part of protocol
+                        yield token
                     print(f"  ✅ Mistral streaming done: {token_count} chunks")
                 else:
                     return response['choices'][0]['text'].strip()
