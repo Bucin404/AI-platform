@@ -757,34 +757,76 @@ function copyCode(button) {
     });
 }
 
-// Streaming typing effect
-function typeMessage(element, text, callback) {
-    let index = 0;
-    const speed = 20; // milliseconds per character
-    element.innerHTML += '<span class="typing-cursor">|</span>';
+// Streaming typing effect - displays formatted HTML smoothly
+function typeMessage(element, htmlContent, callback) {
+    // First, render the HTML completely but hidden
+    element.innerHTML = htmlContent;
+    element.style.opacity = '0';
     
-    function type() {
-        if (index < text.length) {
-            const cursor = element.querySelector('.typing-cursor');
-            const char = text[index];
+    // Apply syntax highlighting to code blocks
+    applySyntaxHighlighting(element);
+    
+    // Get the text content length for animation
+    const textContent = element.textContent;
+    const totalLength = textContent.length;
+    let currentLength = 0;
+    const speed = 5; // milliseconds per character (4x faster than before)
+    
+    // Create a mask that reveals content gradually
+    element.style.opacity = '1';
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = element.innerHTML;
+    element.innerHTML = '';
+    element.appendChild(wrapper);
+    
+    wrapper.style.overflow = 'hidden';
+    wrapper.style.maxHeight = '0';
+    wrapper.style.transition = 'max-height 0.05s linear';
+    
+    function reveal() {
+        if (currentLength < totalLength) {
+            currentLength += 1;
+            // Reveal more content by increasing max-height
+            const lineHeight = 1.6; // rem
+            const fontSize = 0.9375; // rem
+            wrapper.style.maxHeight = (currentLength * lineHeight * fontSize * 0.5) + 'rem';
             
-            if (cursor) {
-                cursor.remove();
-            }
-            
-            element.innerHTML += char === '\n' ? '<br>' : char;
-            element.innerHTML += '<span class="typing-cursor">|</span>';
-            
-            index++;
-            setTimeout(type, speed);
+            setTimeout(reveal, speed);
         } else {
-            const cursor = element.querySelector('.typing-cursor');
-            if (cursor) cursor.remove();
+            wrapper.style.maxHeight = 'none';
+            wrapper.style.overflow = 'visible';
             if (callback) callback();
         }
     }
     
-    type();
+    reveal();
+}
+
+// Apply syntax highlighting to code blocks
+function applySyntaxHighlighting(element) {
+    const codeBlocks = element.querySelectorAll('code.language-python, code.language-javascript, code.language-java, code.language-cpp, code.language-c, code.language-csharp, code.language-php, code.language-ruby, code.language-go, code.language-rust, code.language-swift');
+    
+    codeBlocks.forEach(block => {
+        let code = block.textContent;
+        
+        // Syntax highlighting patterns
+        // Keywords (blue)
+        code = code.replace(/\b(def|class|import|from|return|if|else|elif|for|while|try|except|finally|with|as|pass|break|continue|function|const|let|var|async|await|void|int|string|bool|public|private|protected|static)\b/g, '<span style="color: #569cd6;">$1</span>');
+        
+        // Strings (orange)
+        code = code.replace(/(['"`])(.*?)\1/g, '<span style="color: #ce9178;">$1$2$1</span>');
+        
+        // Comments (green)
+        code = code.replace(/(#.*$|\/\/.*$)/gm, '<span style="color: #6a9955;">$1</span>');
+        
+        // Numbers (light green)
+        code = code.replace(/\b(\d+\.?\d*)\b/g, '<span style="color: #b5cea8;">$1</span>');
+        
+        // Functions (yellow)
+        code = code.replace(/\b([a-zA-Z_]\w*)\s*\(/g, '<span style="color: #dcdcaa;">$1</span>(');
+        
+        block.innerHTML = code;
+    });
 }
 
 function addMessage(role, content, sender) {
@@ -826,12 +868,19 @@ function addMessage(role, content, sender) {
         // Render markdown first
         const rendered = renderMarkdown(content);
         
-        // Use streaming effect for AI responses
+        // Use streaming effect for AI responses - now displays formatted HTML
         typeMessage(bubble, rendered, () => {
-            // After typing is complete, apply proper HTML formatting
-            bubble.innerHTML = rendered;
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
+        
+        // Auto-scroll while typing
+        const scrollInterval = setInterval(() => {
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }, 100);
+        
+        setTimeout(() => {
+            clearInterval(scrollInterval);
+        }, 3000);
     }
 }
 
