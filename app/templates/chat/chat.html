@@ -294,6 +294,151 @@ body.chat-page footer {
     }
 }
 
+/* Typing cursor animation */
+.typing-cursor {
+    animation: blink 0.7s infinite;
+    font-weight: bold;
+    margin-left: 2px;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Markdown Styling in Messages */
+.message-bubble p {
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
+.message-bubble p:first-child {
+    margin-top: 0;
+}
+
+.message-bubble p:last-child {
+    margin-bottom: 0;
+}
+
+.message-bubble h1,
+.message-bubble h2,
+.message-bubble h3 {
+    margin: 16px 0 8px 0;
+    font-weight: 600;
+}
+
+.message-bubble h1 {
+    font-size: 1.5rem;
+}
+
+.message-bubble h2 {
+    font-size: 1.25rem;
+}
+
+.message-bubble h3 {
+    font-size: 1.1rem;
+}
+
+.message-bubble ul,
+.message-bubble ol {
+    margin: 12px 0;
+    padding-left: 24px;
+}
+
+.message-bubble li {
+    margin: 6px 0;
+    line-height: 1.6;
+}
+
+.message-bubble strong {
+    font-weight: 600;
+}
+
+.message-bubble em {
+    font-style: italic;
+}
+
+.message-bubble code.inline-code {
+    background: rgba(102, 126, 234, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+/* Code Blocks */
+.code-block-wrapper {
+    margin: 12px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #1e1e1e;
+}
+
+.code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #2d2d2d;
+    border-bottom: 1px solid #404040;
+}
+
+.code-language {
+    color: #858585;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.copy-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #d4d4d4;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.code-block {
+    margin: 0;
+    padding: 16px;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    overflow-x: auto;
+}
+
+.code-block code {
+    font-family: inherit;
+    color: inherit;
+}
+
+.code-block::-webkit-scrollbar {
+    height: 8px;
+}
+
+.code-block::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+.code-block::-webkit-scrollbar-thumb {
+    background: #404040;
+    border-radius: 4px;
+}
+
+.code-block::-webkit-scrollbar-thumb:hover {
+    background: #505050;
+}
+
+
 /* Modern Input Area */
 .chat-input-area {
     padding: 16px 24px;
@@ -544,6 +689,104 @@ function sendMessage() {
     });
 }
 
+// Markdown rendering function
+function renderMarkdown(text) {
+    // Code blocks with language
+    text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+        const language = lang || 'plaintext';
+        return `<div class="code-block-wrapper">
+            <div class="code-header">
+                <span class="code-language">${language}</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre class="code-block"><code class="language-${language}">${escapeHtml(code.trim())}</code></pre>
+        </div>`;
+    });
+    
+    // Inline code
+    text = text.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+    
+    // Bold
+    text = text.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+    
+    // Italic
+    text = text.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
+    
+    // Headers
+    text = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    text = text.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    text = text.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+    
+    // Ordered lists
+    text = text.replace(/^\d+\.\s+(.*)$/gim, '<li class="ordered-item">$1</li>');
+    
+    // Unordered lists
+    text = text.replace(/^[\-\*]\s+(.*)$/gim, '<li class="unordered-item">$1</li>');
+    
+    // Wrap lists
+    text = text.replace(/(<li class="ordered-item">.*<\/li>)/s, '<ol>$1</ol>');
+    text = text.replace(/(<li class="unordered-item">.*<\/li>)/s, '<ul>$1</ul>');
+    
+    // Paragraphs (split by double newlines)
+    const paragraphs = text.split(/\n\n+/);
+    text = paragraphs.map(p => {
+        p = p.trim();
+        if (p && !p.startsWith('<') && !p.includes('<li')) {
+            return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+        }
+        return p;
+    }).join('\n');
+    
+    return text;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function copyCode(button) {
+    const codeBlock = button.closest('.code-block-wrapper').querySelector('code');
+    const text = codeBlock.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        button.textContent = 'Copied!';
+        setTimeout(() => {
+            button.textContent = 'Copy';
+        }, 2000);
+    });
+}
+
+// Streaming typing effect
+function typeMessage(element, text, callback) {
+    let index = 0;
+    const speed = 20; // milliseconds per character
+    element.innerHTML += '<span class="typing-cursor">|</span>';
+    
+    function type() {
+        if (index < text.length) {
+            const cursor = element.querySelector('.typing-cursor');
+            const char = text[index];
+            
+            if (cursor) {
+                cursor.remove();
+            }
+            
+            element.innerHTML += char === '\n' ? '<br>' : char;
+            element.innerHTML += '<span class="typing-cursor">|</span>';
+            
+            index++;
+            setTimeout(type, speed);
+        } else {
+            const cursor = element.querySelector('.typing-cursor');
+            if (cursor) cursor.remove();
+            if (callback) callback();
+        }
+    }
+    
+    type();
+}
+
 function addMessage(role, content, sender) {
     const messagesDiv = document.getElementById('chatMessages');
     
@@ -559,7 +802,6 @@ function addMessage(role, content, sender) {
     
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
-    bubble.textContent = content;
     
     const time = document.createElement('div');
     time.className = 'message-time';
@@ -572,13 +814,25 @@ function addMessage(role, content, sender) {
     if (role === 'user') {
         wrapper.appendChild(messageContent);
         wrapper.appendChild(avatar);
+        bubble.textContent = content;
+        messagesDiv.appendChild(wrapper);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     } else {
+        // AI response - render markdown and type it out
         wrapper.appendChild(avatar);
         wrapper.appendChild(messageContent);
+        messagesDiv.appendChild(wrapper);
+        
+        // Render markdown first
+        const rendered = renderMarkdown(content);
+        
+        // Use streaming effect for AI responses
+        typeMessage(bubble, rendered, () => {
+            // After typing is complete, apply proper HTML formatting
+            bubble.innerHTML = rendered;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
     }
-    
-    messagesDiv.appendChild(wrapper);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
 function showTypingIndicator() {
