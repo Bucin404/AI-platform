@@ -555,6 +555,16 @@ body.chat-page footer {
 .chat-history::-webkit-scrollbar-thumb:hover {
     background: rgba(102, 126, 234, 0.5);
 }
+
+/* Typing cursor animation */
+@keyframes blink {
+    0%, 49% {
+        opacity: 1;
+    }
+    50%, 100% {
+        opacity: 0;
+    }
+}
 </style>
 {% endblock %}
 
@@ -757,75 +767,158 @@ function copyCode(button) {
     });
 }
 
-// Streaming typing effect - displays formatted HTML smoothly
+// Streaming typing effect - true character-by-character animation
 function typeMessage(element, htmlContent, callback) {
-    // First, render the HTML completely but hidden
-    element.innerHTML = htmlContent;
-    element.style.opacity = '0';
+    // Render and prepare content
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
     
     // Apply syntax highlighting to code blocks
-    applySyntaxHighlighting(element);
+    applySyntaxHighlighting(tempDiv);
     
-    // Get the text content length for animation
-    const textContent = element.textContent;
-    const totalLength = textContent.length;
-    let currentLength = 0;
-    const speed = 5; // milliseconds per character (4x faster than before)
+    // Get all nodes to type
+    const allNodes = [];
+    function collectNodes(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            allNodes.push({type: 'text', content: node.textContent, parent: node.parentNode});
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            allNodes.push({type: 'element', node: node.cloneNode(false), parent: node.parentNode});
+            Array.from(node.childNodes).forEach(collectNodes);
+        }
+    }
+    Array.from(tempDiv.childNodes).forEach(collectNodes);
     
-    // Create a mask that reveals content gradually
-    element.style.opacity = '1';
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = element.innerHTML;
+    // Clear element and start typing
     element.innerHTML = '';
-    element.appendChild(wrapper);
+    let currentNodeIndex = 0;
+    let currentCharIndex = 0;
+    let currentElement = element;
+    const elementStack = [element];
+    const speed = 10; // 10ms per character for smooth visible typing
     
-    wrapper.style.overflow = 'hidden';
-    wrapper.style.maxHeight = '0';
-    wrapper.style.transition = 'max-height 0.05s linear';
+    // Add typing cursor
+    const cursor = document.createElement('span');
+    cursor.textContent = '|';
+    cursor.style.animation = 'blink 1s infinite';
+    cursor.style.marginLeft = '2px';
+    element.appendChild(cursor);
     
-    function reveal() {
-        if (currentLength < totalLength) {
-            currentLength += 1;
-            // Reveal more content by increasing max-height
-            const lineHeight = 1.6; // rem
-            const fontSize = 0.9375; // rem
-            wrapper.style.maxHeight = (currentLength * lineHeight * fontSize * 0.5) + 'rem';
-            
-            setTimeout(reveal, speed);
-        } else {
-            wrapper.style.maxHeight = 'none';
-            wrapper.style.overflow = 'visible';
+    function typeNext() {
+        if (currentNodeIndex >= allNodes.length) {
+            // Remove cursor when done
+            if (cursor.parentNode) {
+                cursor.remove();
+            }
             if (callback) callback();
+            return;
+        }
+        
+        const node = allNodes[currentNodeIndex];
+        
+        if (node.type === 'element') {
+            // Create new element
+            const newElement = node.node.cloneNode(false);
+            currentElement.insertBefore(newElement, cursor);
+            elementStack.push(newElement);
+            currentElement = newElement;
+            currentNodeIndex++;
+            setTimeout(typeNext, 0);
+        } else if (node.type === 'text') {
+            // Type text character by character
+            if (currentCharIndex < node.content.length) {
+                const char = node.content[currentCharIndex];
+                const textNode = document.createTextNode(char);
+                currentElement.insertBefore(textNode, cursor);
+                currentCharIndex++;
+                
+                // Auto-scroll
+                const messagesDiv = document.getElementById('chatMessages');
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                
+                setTimeout(typeNext, speed);
+            } else {
+                // Move to next node
+                currentCharIndex = 0;
+                currentNodeIndex++;
+                // Pop element stack if needed
+                if (currentNodeIndex < allNodes.length && 
+                    allNodes[currentNodeIndex].type === 'element' && 
+                    allNodes[currentNodeIndex].parent !== currentElement) {
+                    elementStack.pop();
+                    currentElement = elementStack[elementStack.length - 1];
+                }
+                setTimeout(typeNext, 0);
+            }
         }
     }
     
-    reveal();
+    typeNext();
 }
 
-// Apply syntax highlighting to code blocks
+// Apply syntax highlighting to code blocks using DOM manipulation
 function applySyntaxHighlighting(element) {
-    const codeBlocks = element.querySelectorAll('code.language-python, code.language-javascript, code.language-java, code.language-cpp, code.language-c, code.language-csharp, code.language-php, code.language-ruby, code.language-go, code.language-rust, code.language-swift');
+    const codeBlocks = element.querySelectorAll('code[class*="language-"]');
     
     codeBlocks.forEach(block => {
-        let code = block.textContent;
+        const code = block.textContent;
+        const lines = code.split('\n');
+        block.innerHTML = ''; // Clear content
         
-        // Syntax highlighting patterns
-        // Keywords (blue)
-        code = code.replace(/\b(def|class|import|from|return|if|else|elif|for|while|try|except|finally|with|as|pass|break|continue|function|const|let|var|async|await|void|int|string|bool|public|private|protected|static)\b/g, '<span style="color: #569cd6;">$1</span>');
-        
-        // Strings (orange)
-        code = code.replace(/(['"`])(.*?)\1/g, '<span style="color: #ce9178;">$1$2$1</span>');
-        
-        // Comments (green)
-        code = code.replace(/(#.*$|\/\/.*$)/gm, '<span style="color: #6a9955;">$1</span>');
-        
-        // Numbers (light green)
-        code = code.replace(/\b(\d+\.?\d*)\b/g, '<span style="color: #b5cea8;">$1</span>');
-        
-        // Functions (yellow)
-        code = code.replace(/\b([a-zA-Z_]\w*)\s*\(/g, '<span style="color: #dcdcaa;">$1</span>(');
-        
-        block.innerHTML = code;
+        lines.forEach((line, lineIndex) => {
+            const lineSpan = document.createElement('span');
+            lineSpan.style.display = 'block';
+            
+            // Process line for syntax highlighting
+            let remaining = line;
+            let result = document.createDocumentFragment();
+            
+            // Regex patterns
+            const patterns = [
+                // Strings (orange) - must be first to avoid conflicts
+                {regex: /(['"`])(?:(?=(\\?))\2.)*?\1/, color: '#ce9178', type: 'string'},
+                // Comments (green)
+                {regex: /#.*$|\/\/.*$|\/\*[\s\S]*?\*\//, color: '#6a9955', type: 'comment'},
+                // Keywords (blue)
+                {regex: /\b(def|class|import|from|return|if|else|elif|for|while|try|except|finally|with|as|pass|break|continue|function|const|let|var|async|await|void|int|string|bool|public|private|protected|static|new|this|super|extends|implements)\b/, color: '#569cd6', type: 'keyword'},
+                // Numbers (light green)
+                {regex: /\b\d+\.?\d*\b/, color: '#b5cea8', type: 'number'},
+                // Functions (yellow) - function names before (
+                {regex: /\b([a-zA-Z_]\w*)\s*(?=\()/, color: '#dcdcaa', type: 'function'}
+            ];
+            
+            while (remaining.length > 0) {
+                let matched = false;
+                
+                for (const pattern of patterns) {
+                    const match = remaining.match(pattern.regex);
+                    if (match && match.index === 0) {
+                        // Create colored span
+                        const span = document.createElement('span');
+                        span.style.color = pattern.color;
+                        span.textContent = match[0];
+                        result.appendChild(span);
+                        remaining = remaining.slice(match[0].length);
+                        matched = true;
+                        break;
+                    }
+                }
+                
+                if (!matched) {
+                    // Add plain text
+                    const textNode = document.createTextNode(remaining[0]);
+                    result.appendChild(textNode);
+                    remaining = remaining.slice(1);
+                }
+            }
+            
+            lineSpan.appendChild(result);
+            block.appendChild(lineSpan);
+            
+            // Add newline except for last line
+            if (lineIndex < lines.length - 1) {
+                block.appendChild(document.createTextNode('\n'));
+            }
+        });
     });
 }
 
