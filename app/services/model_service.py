@@ -47,8 +47,8 @@ class LlamaCppAdapter(ModelAdapter):
                 self.model = Llama(
                     model_path=self.model_path,
                     n_ctx=2048,  # Reduced from 4096 for speed
-                    n_threads=8,  # Increased from 4 for parallel processing
-                    n_batch=512,  # Larger batch for faster processing
+                    n_threads=12,  # Increased to 12 for faster parallel processing
+                    n_batch=1024,  # Doubled to 1024 for faster token generation
                     n_gpu_layers=0,  # Set to 35+ if GPU available
                     use_mlock=True,  # Lock memory for faster access
                     use_mmap=True,  # Memory mapping for speed
@@ -77,7 +77,8 @@ class LlamaCppAdapter(ModelAdapter):
                     repeat_penalty=1.1,  # Prevent repetition
                     stop=["User:", "\n\nUser:", "\n\nQuestion:"],
                     echo=False,
-                    stream=False  # No streaming for instant response
+                    stream=False,  # No streaming for instant response
+                    threads=12  # Optimized thread count for inference
                 )
                 return response['choices'][0]['text'].strip()
             except Exception as e:

@@ -401,6 +401,34 @@ def get_current_session():
         return jsonify({'error': str(e)}), 500
 
 
+@chat_bp.route('/session/<int:session_id>/delete', methods=['DELETE'])
+@login_required
+def delete_session(session_id):
+    """Delete a conversation session."""
+    try:
+        # Verify session belongs to user
+        session = ConversationSession.query.filter_by(
+            id=session_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not session:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        # Delete all messages in session
+        Message.query.filter_by(session_id=session_id).delete()
+        
+        # Delete session
+        db.session.delete(session)
+        db.session.commit()
+        
+        return jsonify({'message': 'Session deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 500
+
+
 @chat_bp.route('/models')
 @login_required
 def get_models():
