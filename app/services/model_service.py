@@ -830,6 +830,24 @@ def detect_content_type(prompt):
     # Check for PDF content
     if any(keyword in prompt_lower for keyword in pdf_keywords):
         return 'pdf'
+    
+    # Check for image content
+    if any(keyword in prompt_lower for keyword in image_keywords):
+        return 'image'
+    
+    # Check for video content
+    if any(keyword in prompt_lower for keyword in video_keywords):
+        return 'video'
+    
+    # Check for file content
+    if any(keyword in prompt_lower for keyword in file_keywords):
+        return 'file'
+    
+    # Check for code blocks or patterns
+    if '```' in prompt or re.search(r'def |class |function |import |const |var |let ', prompt):
+        return 'code'
+    
+    return 'general'
 
 
 def detect_language(text):
@@ -882,24 +900,6 @@ def generate_unique_response_id(prompt):
     hash_hex = hash_object.hexdigest()
     # Convert to integer for modulo operation
     return int(hash_hex, 16)
-    
-    # Check for image content
-    if any(keyword in prompt_lower for keyword in image_keywords):
-        return 'image'
-    
-    # Check for video content
-    if any(keyword in prompt_lower for keyword in video_keywords):
-        return 'video'
-    
-    # Check for file content
-    if any(keyword in prompt_lower for keyword in file_keywords):
-        return 'file'
-    
-    # Check for code blocks or patterns
-    if '```' in prompt or re.search(r'def |class |function |import |const |var |let ', prompt):
-        return 'code'
-    
-    return 'general'
 
 
 def select_model_for_content(prompt, requested_model=None):
