@@ -416,13 +416,17 @@ class MistralAdapter(ModelAdapter):
                 import traceback
                 traceback.print_exc()
                 if stream:
-                    yield self._mock_response(prompt)
+                    def error_generator():
+                        yield self._mock_response(prompt)
+                    return error_generator()
                 else:
                     return self._mock_response(prompt)
         else:
             print(f"⚠️  Mistral model not loaded, using fallback")
             if stream:
-                yield self._mock_response(prompt)
+                def fallback_generator():
+                    yield self._mock_response(prompt)
+                return fallback_generator()
             else:
                 return self._mock_response(prompt)
     
@@ -524,12 +528,16 @@ class CodeLlamaAdapter(ModelAdapter):
             except Exception as e:
                 print(f"Error generating response: {e}")
                 if stream:
-                    yield self._mock_response(prompt)
+                    def error_generator():
+                        yield self._mock_response(prompt)
+                    return error_generator()
                 else:
                     return self._mock_response(prompt)
         else:
             if stream:
-                yield self._mock_response(prompt)
+                def fallback_generator():
+                    yield self._mock_response(prompt)
+                return fallback_generator()
             else:
                 return self._mock_response(prompt)
     
@@ -631,12 +639,16 @@ class Llama3Adapter(ModelAdapter):
             except Exception as e:
                 print(f"Error generating response: {e}")
                 if stream:
-                    yield self._mock_response(prompt)
+                    def error_generator():
+                        yield self._mock_response(prompt)
+                    return error_generator()
                 else:
                     return self._mock_response(prompt)
         else:
             if stream:
-                yield self._mock_response(prompt)
+                def fallback_generator():
+                    yield self._mock_response(prompt)
+                return fallback_generator()
             else:
                 return self._mock_response(prompt)
     
@@ -738,12 +750,16 @@ class HermesAdapter(ModelAdapter):
             except Exception as e:
                 print(f"Error generating response: {e}")
                 if stream:
-                    yield self._mock_response(prompt)
+                    def error_generator():
+                        yield self._mock_response(prompt)
+                    return error_generator()
                 else:
                     return self._mock_response(prompt)
         else:
             if stream:
-                yield self._mock_response(prompt)
+                def fallback_generator():
+                    yield self._mock_response(prompt)
+                return fallback_generator()
             else:
                 return self._mock_response(prompt)
     
