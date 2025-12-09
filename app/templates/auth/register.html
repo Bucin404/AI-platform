@@ -1,69 +1,56 @@
 {% extends "base.html" %}
 
-{% block title %}Register - AI Platform{% endblock %}
+{% block title %}{{ t.register_title }} - {{ t.platform_name }}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 px-4">
-    <div class="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl">
-        <div>
-            <h2 class="text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-                Create Account
-            </h2>
-            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-                Join AI Platform today
-            </p>
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>{{ t.register_title }}</h1>
+            <p>{{ t.register_subtitle }}</p>
         </div>
         
-        <form class="mt-8 space-y-6" method="POST" action="{{ url_for('auth.register') }}">
+        <form method="POST" class="auth-form">
             {{ form.hidden_tag() }}
             
-            <div class="rounded-md shadow-sm space-y-4">
-                <div>
-                    {{ form.username.label(class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1") }}
-                    {{ form.username(class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder="Username") }}
-                    {% if form.username.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.username.errors[0] }}</p>
-                    {% endif %}
-                </div>
-                
-                <div>
-                    {{ form.email.label(class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1") }}
-                    {{ form.email(class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder="Email address") }}
-                    {% if form.email.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.email.errors[0] }}</p>
-                    {% endif %}
-                </div>
-                
-                <div>
-                    {{ form.password.label(class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1") }}
-                    {{ form.password(class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder="Password (min 8 characters)") }}
-                    {% if form.password.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.password.errors[0] }}</p>
-                    {% endif %}
-                </div>
-                
-                <div>
-                    {{ form.password2.label(class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1") }}
-                    {{ form.password2(class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder="Confirm password") }}
-                    {% if form.password2.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.password2.errors[0] }}</p>
-                    {% endif %}
-                </div>
+            <div class="form-group">
+                <label>{{ t.register_username }}</label>
+                {{ form.username(class="form-input") }}
+                {% if form.username.errors %}
+                    <span class="error">{{ form.username.errors[0] }}</span>
+                {% endif %}
             </div>
             
-            <div>
-                {{ form.submit(class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer") }}
+            <div class="form-group">
+                <label>{{ t.register_email }}</label>
+                {{ form.email(class="form-input", type="email") }}
+                {% if form.email.errors %}
+                    <span class="error">{{ form.email.errors[0] }}</span>
+                {% endif %}
             </div>
             
-            <div class="text-center">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Already have an account?
-                    <a href="{{ url_for('auth.login') }}" class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
-                        Sign in
-                    </a>
-                </p>
+            <div class="form-group">
+                <label>{{ t.register_password }}</label>
+                {{ form.password(class="form-input", type="password") }}
+                {% if form.password.errors %}
+                    <span class="error">{{ form.password.errors[0] }}</span>
+                {% endif %}
             </div>
+            
+            <div class="form-group">
+                <label>{{ t.register_password2 }}</label>
+                {{ form.password2(class="form-input", type="password") }}
+                {% if form.password2.errors %}
+                    <span class="error">{{ form.password2.errors[0] }}</span>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">{{ t.register_submit }}</button>
         </form>
+        
+        <div class="auth-footer">
+            <p>{{ t.register_have_account }} <a href="{{ url_for('auth.login') }}">{{ t.register_signin }}</a></p>
+        </div>
     </div>
 </div>
 {% endblock %}

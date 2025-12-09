@@ -1,440 +1,110 @@
 {% extends "base.html" %}
 
-{% block title %}Chat - AI Platform{% endblock %}
+{% block title %}{{ t.nav_chat }} - {{ t.platform_name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+{% endblock %}
 
 {% block content %}
-<div class="flex h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" id="app">
-    <!-- Sidebar -->
-    <div class="w-72 bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col shadow-2xl">
-        <!-- Header -->
-        <div class="p-6 border-b border-gray-700/50 backdrop-blur-sm">
-            <div class="flex items-center space-x-3 mb-4">
-                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold">AI Platform</h1>
-                    <p class="text-xs text-gray-400">{{ current_user.username }}</p>
-                </div>
-            </div>
-            <button onclick="newChat()" class="w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:scale-105 flex items-center justify-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                <span>New Chat</span>
-            </button>
-        </div>
-        
-        <!-- Navigation -->
-        <nav class="flex-1 overflow-y-auto p-4 space-y-2">
-            <a href="{{ url_for('main.pricing') }}" class="group block px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 backdrop-blur-sm">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                        {% if current_user.is_premium() %}
-                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                        {% else %}
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                        </svg>
-                        {% endif %}
-                    </div>
-                    <div class="flex-1">
-                        <div class="text-sm font-semibold">
-                            {% if current_user.is_premium() %}
-                                Premium Active
-                            {% else %}
-                                Upgrade to Premium
-                            {% endif %}
-                        </div>
-                        <div class="text-xs text-gray-400">
-                            {% if current_user.is_premium() %}
-                                {{ current_user.tier }}
-                            {% else %}
-                                Unlock more features
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </a>
-            
-            <a href="{{ url_for('main.about') }}" class="block px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 flex items-center space-x-3">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>About</span>
-            </a>
-            
-            <a href="{{ url_for('main.faq') }}" class="block px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 flex items-center space-x-3">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>FAQ</span>
-            </a>
-            
-            {% if current_user.is_admin() %}
-            <a href="{{ url_for('admin.index') }}" class="block px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 hover:bg-purple-600/30 transition-all duration-200 flex items-center space-x-3">
-                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                </svg>
-                <span class="font-semibold">Admin Panel</span>
-            </a>
-            {% endif %}
-        </nav>
-        
-        <!-- Footer -->
-        <div class="p-4 border-t border-gray-700/50 space-y-3 backdrop-blur-sm">
-            <div class="px-4 py-3 rounded-xl bg-white/5 backdrop-blur-sm">
-                <div class="text-xs text-gray-400 mb-1">Usage Today</div>
-                <div class="text-sm font-semibold" id="usage-info">Loading...</div>
-            </div>
-            
-            <button onclick="toggleDarkMode()" class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 flex items-center space-x-3">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                </svg>
-                <span>Dark / Light Mode</span>
-            </button>
-            
-            <a href="{{ url_for('auth.logout') }}" class="block px-4 py-3 rounded-xl hover:bg-red-500/10 transition-all duration-200 text-red-400 hover:text-red-300 flex items-center space-x-3">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                </svg>
-                <span>Logout</span>
-            </a>
+<div class="chat-container">
+    <div class="chat-sidebar">
+        <h2>{{ t.nav_chat }}</h2>
+        <button class="btn btn-primary new-chat-btn" onclick="newChat()">New Chat</button>
+        <div class="chat-history">
+            <!-- Chat history will be loaded here -->
         </div>
     </div>
     
-    <!-- Main Chat Area -->
-    <div class="flex-1 flex flex-col bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
-        <!-- Header with Model Selector -->
-        <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 p-5 flex items-center justify-between shadow-sm">
-            <div class="flex items-center space-x-4">
-                <label for="model-select" class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center space-x-2">
-                    <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
-                    </svg>
-                    <span>AI Model:</span>
-                </label>
-                <select id="model-select" class="px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 font-medium hover:border-indigo-300 cursor-pointer">
-                    <option value="auto">🤖 Auto-Select (Recommended)</option>
-                    <!-- Models will be loaded dynamically -->
+    <div class="chat-main">
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h1>{{ t.welcome_message }}</h1>
+                <p>{{ t.platform_tagline }}</p>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <select id="modelSelect" class="model-select">
+                    <option value="auto">Auto-Select</option>
+                    <option value="deepseek">DeepSeek Coder</option>
+                    <option value="llama">Llama 2</option>
+                    <option value="gpt4all">GPT4All</option>
+                    <option value="vicuna">Vicuna</option>
                 </select>
-            </div>
-            <div class="flex items-center space-x-3">
-                <div class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-200 dark:border-indigo-800">
-                    <div class="text-xs text-gray-600 dark:text-gray-400" id="model-info">
-                        Auto mode: Intelligent model selection
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Chat Messages -->
-        <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-6">
-            <div class="text-center text-gray-500 dark:text-gray-400 py-12 animate-fade-in">
-                <div class="mb-6">
-                    <div class="w-20 h-20 mx-auto bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-3xl flex items-center justify-center shadow-lg">
-                        <svg class="h-10 w-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <p class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Start a conversation with AI</p>
-                <p class="text-sm mb-6">Choose a model or use auto-mode for intelligent routing</p>
-                <div class="max-w-2xl mx-auto grid grid-cols-2 gap-4 text-left text-sm">
-                    <div class="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-xl border border-blue-200 dark:border-blue-800">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <div class="text-2xl">💻</div>
-                            <span class="font-bold text-blue-700 dark:text-blue-400">DeepSeek Coder</span>
-                        </div>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">For coding and programming tasks</p>
-                    </div>
-                    <div class="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 rounded-xl border border-purple-200 dark:border-purple-800">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <div class="text-2xl">📄</div>
-                            <span class="font-bold text-purple-700 dark:text-purple-400">Llama.cpp</span>
-                        </div>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">For documents and large files</p>
-                    </div>
-                    <div class="p-4 bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/10 dark:to-rose-900/10 rounded-xl border border-pink-200 dark:border-pink-800">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <div class="text-2xl">🎨</div>
-                            <span class="font-bold text-pink-700 dark:text-pink-400">Vicuna</span>
-                        </div>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">For images and videos</p>
-                    </div>
-                    <div class="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 rounded-xl border border-green-200 dark:border-green-800">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <div class="text-2xl">💬</div>
-                            <span class="font-bold text-green-700 dark:text-green-400">GPT4All</span>
-                        </div>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">For general chat</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Input Area -->
-        <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-200/50 dark:border-gray-700/50 p-6 shadow-lg">
-            <div class="max-w-4xl mx-auto">
-                <form id="chat-form" class="flex space-x-4 items-end">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="flex-1 relative">
-                        <textarea 
-                            id="message-input" 
-                            rows="1" 
-                            class="w-full px-6 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                            placeholder="Type your message... (Shift+Enter for new line)"
-                            style="min-height: 56px; max-height: 200px;"
-                        ></textarea>
-                        <div class="absolute bottom-2 right-2 text-xs text-gray-400 pointer-events-none">
-                            Press Enter to send
-                        </div>
-                    </div>
-                    <button 
-                        type="submit" 
-                        id="send-button"
-                        class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-2xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:scale-105 flex items-center space-x-2 min-w-[120px] justify-center"
-                    >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                        </svg>
-                        <span>Send</span>
-                    </button>
-                </form>
-                <div class="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <div class="flex items-center space-x-4">
-                        <span class="flex items-center space-x-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                            <span>Powered by open-source AI</span>
-                        </span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <div class="px-3 py-1 rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 border border-indigo-200 dark:border-indigo-800">
-                            <span class="font-semibold" id="rate-limit-info">Loading...</span>
-                        </div>
-                    </div>
-                </div>
+                <textarea id="messageInput" class="chat-input" placeholder="Type your message..." rows="1"></textarea>
+                <button id="sendButton" class="send-button" onclick="sendMessage()">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-const csrfToken = '{{ csrf_token() }}';
-let currentModel = 'auto';
-let isLoading = false;
-
-// Load models
-async function loadModels() {
-    try {
-        const response = await fetch('/chat/models');
-        const data = await response.json();
-        const select = document.getElementById('model-select');
-        
-        // Clear existing options except auto
-        select.innerHTML = '<option value="auto">Auto-Select (Recommended)</option>';
-        
-        data.models.forEach(model => {
-            if (model.id !== 'auto') {
-                const option = document.createElement('option');
-                option.value = model.id;
-                option.textContent = `${model.name} - ${model.use_case || model.description}`;
-                select.appendChild(option);
-            }
-        });
-    } catch (error) {
-        console.error('Error loading models:', error);
-    }
-}
-
-// Load usage info
-async function loadUsage() {
-    try {
-        const response = await fetch('/api/usage');
-        const data = await response.json();
-        document.getElementById('usage-info').textContent = 
-            `${data.messages_today}/${data.rate_limit} messages today`;
-        document.getElementById('rate-limit-info').textContent = 
-            `${data.messages_today}/${data.rate_limit} messages used today`;
-    } catch (error) {
-        console.error('Error loading usage:', error);
-    }
-}
-
-// Model selector change
-document.getElementById('model-select').addEventListener('change', (e) => {
-    currentModel = e.target.value;
-    const info = document.getElementById('model-info');
-    if (currentModel === 'auto') {
-        info.textContent = 'Auto mode will select the best model for your task';
-    } else {
-        const option = e.target.selectedOptions[0];
-        info.textContent = option.textContent.split(' - ')[1] || '';
-    }
-});
-
-// Send message
-document.getElementById('chat-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    if (isLoading) return;
-    
-    const input = document.getElementById('message-input');
+function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const model = document.getElementById('modelSelect').value;
     const message = input.value.trim();
     
     if (!message) return;
-    
-    // Disable input
-    isLoading = true;
-    input.disabled = true;
-    document.getElementById('send-button').disabled = true;
     
     // Add user message to chat
     addMessage('user', message);
     input.value = '';
     
-    // Show loading indicator
-    const loadingId = addMessage('assistant', '...', true);
-    
-    try {
-        const response = await fetch('/chat/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify({
-                message: message,
-                model: currentModel
-            })
-        });
-        
-        const data = await response.json();
-        
-        // Remove loading indicator
-        document.getElementById(loadingId)?.remove();
-        
-        if (response.ok) {
-            addMessage('assistant', data.response, false, data.model);
-            loadUsage(); // Update usage stats
-        } else {
-            addMessage('assistant', `Error: ${data.error}`, false, null, true);
+    // Send to server
+    fetch('/chat/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: message,
+            model: model
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.response) {
+            addMessage('assistant', data.response);
+        } else if (data.error) {
+            addMessage('error', data.error);
         }
-    } catch (error) {
-        document.getElementById(loadingId)?.remove();
-        addMessage('assistant', `Error: ${error.message}`, false, null, true);
-    } finally {
-        isLoading = false;
-        input.disabled = false;
-        document.getElementById('send-button').disabled = false;
-        input.focus();
-    }
-});
+    })
+    .catch(error => {
+        addMessage('error', 'Failed to send message');
+    });
+}
 
-// Add message to chat
-function addMessage(role, content, isLoading = false, model = null, isError = false) {
-    const messagesDiv = document.getElementById('chat-messages');
-    const messageId = 'msg-' + Date.now();
-    
+function addMessage(role, content) {
+    const messagesDiv = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
-    messageDiv.id = messageId;
-    messageDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`;
-    
-    let bgColor, textColor, borderColor;
-    if (role === 'user') {
-        bgColor = 'bg-gradient-to-r from-indigo-600 to-purple-600';
-        textColor = 'text-white';
-        borderColor = '';
-    } else if (isError) {
-        bgColor = 'bg-red-50 dark:bg-red-900/20';
-        textColor = 'text-red-900 dark:text-red-100';
-        borderColor = 'border-2 border-red-200 dark:border-red-800';
-    } else {
-        bgColor = 'bg-white dark:bg-gray-800';
-        textColor = 'text-gray-900 dark:text-white';
-        borderColor = 'border border-gray-200 dark:border-gray-700 shadow-lg';
-    }
-    
-    let renderedContent = content;
-    if (!isLoading && role === 'assistant' && !isError) {
-        renderedContent = marked.parse(content);
-        // Highlight code blocks
-        setTimeout(() => {
-            messageDiv.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightElement(block);
-            });
-        }, 100);
-    }
-    
-    const modelBadge = model ? `
-        <div class="flex items-center space-x-2 mb-2 opacity-75">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
-            </svg>
-            <span class="text-xs font-semibold">${model}</span>
-        </div>
-    ` : '';
-    
-    messageDiv.innerHTML = `
-        <div class="max-w-3xl px-5 py-4 rounded-2xl ${bgColor} ${textColor} ${borderColor} ${role === 'user' ? 'shadow-lg' : ''}">
-            ${modelBadge}
-            <div class="prose prose-sm dark:prose-invert max-w-none ${role === 'user' ? 'text-white prose-headings:text-white prose-p:text-white prose-li:text-white prose-strong:text-white prose-code:text-white' : ''} prose-pre:bg-gray-900 dark:prose-pre:bg-gray-950 prose-pre:shadow-xl">${renderedContent}</div>
-        </div>
-    `;
-    
+    messageDiv.className = `message message-${role}`;
+    messageDiv.textContent = content;
     messagesDiv.appendChild(messageDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    
-    return messageId;
 }
 
-// New chat
 function newChat() {
-    const messagesDiv = document.getElementById('chat-messages');
-    messagesDiv.innerHTML = `
-        <div class="text-center text-gray-500 dark:text-gray-400 py-8">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-            </svg>
-            <p class="mt-4">Start a conversation with AI</p>
-        </div>
-    `;
-}
-
-// Dark mode toggle
-function toggleDarkMode() {
-    document.documentElement.classList.toggle('dark');
-    localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+    document.getElementById('chatMessages').innerHTML = '<div class="welcome-message"><h1>{{ t.welcome_message }}</h1><p>{{ t.platform_tagline }}</p></div>';
 }
 
 // Auto-resize textarea
-document.getElementById('message-input').addEventListener('input', function() {
+document.getElementById('messageInput').addEventListener('input', function() {
     this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+    this.style.height = this.scrollHeight + 'px';
 });
 
-// Handle Shift+Enter for new line, Enter for submit
-document.getElementById('message-input').addEventListener('keydown', function(e) {
+// Send on Enter (Shift+Enter for new line)
+document.getElementById('messageInput').addEventListener('keypress', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        document.getElementById('chat-form').dispatchEvent(new Event('submit'));
+        sendMessage();
     }
 });
-
-// Initialize dark mode
-if (localStorage.getItem('darkMode') === 'true') {
-    document.documentElement.classList.add('dark');
-}
-
-// Load initial data
-loadModels();
-loadUsage();
 </script>
 {% endblock %}

@@ -1,46 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Home - AI Platform{% endblock %}
+{% block title %}{{ t.nav_dashboard }} - {{ t.platform_name }}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <nav class="bg-white dark:bg-gray-800 shadow">
-        <div class="max-w-7xl mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-indigo-600">AI Platform</h1>
-                <div class="space-x-4">
-                    <a href="{{ url_for('chat.index') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
-                        Go to Chat
-                    </a>
-                    <a href="{{ url_for('auth.logout') }}" class="text-gray-700 dark:text-gray-300">Logout</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+<div class="dashboard-page">
+    <div class="dashboard-header">
+        <h1 class="fade-in">{{ t.welcome_message }}, {{ current_user.username }}!</h1>
+        <p>{{ t.dashboard_subtitle }}</p>
+    </div>
     
-    <div class="max-w-7xl mx-auto px-4 py-12">
-        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-            Welcome, {{ current_user.username }}!
-        </h2>
-        <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">
-            Your AI chat platform with intelligent model routing
-        </p>
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <h3>{{ t.dashboard_start_chat }}</h3>
+            <p>{{ t.dashboard_start_chat_desc }}</p>
+            <a href="{{ url_for('chat.index') }}" class="btn btn-primary">{{ t.nav_chat }}</a>
+        </div>
         
-        <div class="grid md:grid-cols-3 gap-6">
-            <a href="{{ url_for('chat.index') }}" class="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Start Chatting</h3>
-                <p class="text-gray-600 dark:text-gray-300">Chat with specialized AI models</p>
-            </a>
-            
-            <a href="{{ url_for('main.pricing') }}" class="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Upgrade</h3>
-                <p class="text-gray-600 dark:text-gray-300">Get premium access for more features</p>
-            </a>
-            
-            <a href="{{ url_for('main.faq') }}" class="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Help & FAQ</h3>
-                <p class="text-gray-600 dark:text-gray-300">Learn how to use the platform</p>
-            </a>
+        <div class="dashboard-card">
+            <h3>{{ t.dashboard_upgrade }}</h3>
+            <p>{{ t.dashboard_upgrade_desc }}</p>
+            <a href="{{ url_for('main.pricing') }}" class="btn btn-secondary">{{ t.nav_pricing }}</a>
+        </div>
+        
+        <div class="dashboard-card">
+            <h3>{{ t.dashboard_help }}</h3>
+            <p>{{ t.dashboard_help_desc }}</p>
+            <a href="{{ url_for('main.faq') }}" class="btn btn-secondary">{{ t.nav_faq }}</a>
         </div>
     </div>
 </div>
