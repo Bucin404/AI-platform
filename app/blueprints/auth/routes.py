@@ -1,13 +1,23 @@
 """Authentication routes."""
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, current_user
 from app.blueprints.auth import auth_bp
 from app.blueprints.auth.forms import LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm
 from app.models.user import User
 from app import db
 from app.services.email_service import send_password_reset_email
+from app.translations import get_all_translations
 import secrets
 from datetime import datetime, timedelta
+
+
+def get_locale():
+    """Get user's preferred language from session or browser"""
+    if 'lang' in session:
+        return session['lang']
+    browser_lang = request.accept_languages.best_match(['en', 'id'])
+    session['lang'] = browser_lang or 'id'
+    return session['lang']
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -33,7 +43,9 @@ def login():
             next_page = url_for('chat.index')
         return redirect(next_page)
     
-    return render_template('login.html', form=form)
+    lang = get_locale()
+    translations = get_all_translations(lang)
+    return render_template('auth/login.html', form=form, t=translations, lang=lang)
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
@@ -55,7 +67,9 @@ def register():
         flash('Congratulations, you are now registered!', 'success')
         return redirect(url_for('auth.login'))
     
-    return render_template('register.html', form=form)
+    lang = get_locale()
+    translations = get_all_translations(lang)
+    return render_template('auth/register.html', form=form, t=translations, lang=lang)
 
 
 @auth_bp.route('/logout')
