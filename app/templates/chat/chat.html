@@ -744,7 +744,8 @@ body:not(.sidebar-collapsed) .sidebar-toggle svg {
 /* Modern Input Area */
 .chat-input-area {
     padding: 16px 32px;
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -757,17 +758,22 @@ body:not(.sidebar-collapsed) .sidebar-toggle svg {
     display: flex;
     align-items: flex-end;
     gap: 12px;
-    padding: 10px 16px;
-    background: rgba(102, 126, 234, 0.04);
-    border: 2px solid rgba(102, 126, 234, 0.1);
-    border-radius: 12px;
+    padding: 12px 18px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border: 2px solid transparent;
+    border-radius: 16px;
     transition: all 0.3s ease;
+    background-image: linear-gradient(white, white), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-origin: padding-box, border-box;
+    background-clip: padding-box, border-box;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
 }
 
 .input-wrapper:focus-within {
-    border-color: #667eea;
-    background: white;
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
 }
 
 .chat-input {
@@ -812,6 +818,36 @@ body:not(.sidebar-collapsed) .sidebar-toggle svg {
 .send-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* Scroll to Bottom Button */
+.scroll-to-bottom {
+    position: fixed;
+    bottom: 120px;
+    right: 40px;
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    z-index: 50;
+}
+
+.scroll-to-bottom:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.scroll-to-bottom svg {
+    color: #667eea;
 }
 
 /* Responsive Design */
@@ -1236,7 +1272,7 @@ document.body.classList.add('chat-page');
                         placeholder="Type your message..." 
                         rows="1"
                     ></textarea>
-                    <button id="sendButton" class="send-button" onclick="sendMessage()">
+                    <button id="sendButton" class="send-button" onclick="handleSendOrStop()">
                         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
                         </svg>
@@ -1245,6 +1281,13 @@ document.body.classList.add('chat-page');
                 <div id="filePreview" class="file-preview" style="display: none;"></div>
             </div>
         </div>
+        
+        <!-- Scroll to Bottom Button -->
+        <button id="scrollToBottom" class="scroll-to-bottom" onclick="scrollToBottomSmooth()" style="display: none;">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+            </svg>
+        </button>
     </div>
 </div>
 
@@ -1296,6 +1339,13 @@ function sendMessage() {
     // Show typing indicator
     showTypingIndicator();
     
+    // Set streaming state and update button
+    isStreaming = true;
+    updateSendButton();
+    
+    // Create abort controller for this request
+    abortController = new AbortController();
+    
     // Use fetch POST for SSE streaming (EventSource only supports GET)
     fetch('/chat/stream', {
         method: 'POST',
@@ -1307,7 +1357,9 @@ function sendMessage() {
             message: message,
             model: model,
             session_id: currentSessionId
-        })
+        }),
+        signal: abortController.signal
+    })
     })
     .then(response => {
         if (!response.ok) {
@@ -1329,6 +1381,8 @@ function sendMessage() {
         function readStream() {
             reader.read().then(({done, value}) => {
                 if (done) {
+                    isStreaming = false;
+                    updateSendButton();
                     button.disabled = false;
                     input.disabled = false;
                     input.focus();
@@ -1350,6 +1404,8 @@ function sendMessage() {
                                 console.error('❌ Error from server:', data.error);
                                 removeTypingIndicator();
                                 addMessage('assistant', 'Sorry, I encountered an error. Please try again.', 'AI');
+                                isStreaming = false;
+                                updateSendButton();
                                 button.disabled = false;
                                 input.disabled = false;
                                 input.focus();
@@ -1361,6 +1417,8 @@ function sendMessage() {
                                 if (data.session_id) {
                                     currentSessionId = data.session_id;
                                 }
+                                isStreaming = false;
+                                updateSendButton();
                                 button.disabled = false;
                                 input.disabled = false;
                                 input.focus();
@@ -1421,6 +1479,8 @@ function sendMessage() {
                 if (!messageElement) {
                     addMessage('assistant', 'Sorry, I encountered an error. Please try again.', 'AI');
                 }
+                isStreaming = false;
+                updateSendButton();
                 button.disabled = false;
                 input.disabled = false;
                 input.focus();
@@ -1434,6 +1494,8 @@ function sendMessage() {
         console.error('Fetch error:', error);
         removeTypingIndicator();
         addMessage('assistant', 'Sorry, I encountered an error. Please try again.', 'AI');
+        isStreaming = false;
+        updateSendButton();
         button.disabled = false;
         input.disabled = false;
         input.focus();
@@ -1994,9 +2056,84 @@ textarea.addEventListener('input', function() {
 textarea.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        sendMessage();
+        if (!isStreaming) {
+            sendMessage();
+        }
     }
 });
+
+// ===== NEW FEATURES: Streaming State, Stop Button, Scroll Controls =====
+
+// Streaming state and abort controller
+let isStreaming = false;
+let abortController = null;
+
+// Scroll to bottom functions
+function scrollToBottomSmooth() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTo({
+        top: chatMessages.scrollHeight,
+        behavior: 'smooth'
+    });
+}
+
+function scrollToBottomInstant() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Scroll detection for scroll-to-bottom button
+const chatMessages = document.getElementById('chatMessages');
+const scrollButton = document.getElementById('scrollToBottom');
+
+if (scrollButton && chatMessages) {
+    chatMessages.addEventListener('scroll', () => {
+        const isAtBottom = chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight < 10;
+        scrollButton.style.display = isAtBottom ? 'none' : 'flex';
+    });
+}
+
+// Update send button based on streaming state
+function updateSendButton() {
+    const sendButton = document.getElementById('sendButton');
+    if (isStreaming) {
+        // Stop icon (square)
+        sendButton.innerHTML = '<svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+        sendButton.title = 'Stop generating';
+    } else {
+        // Send icon (paper plane)
+        sendButton.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';
+        sendButton.title = 'Send message';
+    }
+}
+
+// Handle send or stop based on current state
+function handleSendOrStop() {
+    if (isStreaming) {
+        stopGeneration();
+    } else {
+        sendMessage();
+    }
+}
+
+// Stop generation function
+function stopGeneration() {
+    if (abortController) {
+        abortController.abort();
+        abortController = null;
+    }
+    isStreaming = false;
+    updateSendButton();
+    
+    const button = document.getElementById('sendButton');
+    const input = document.getElementById('messageInput');
+    button.disabled = false;
+    input.disabled = false;
+    input.focus();
+    
+    removeTypingIndicator();
+}
+
 </script>
 {% endblock %}
 
