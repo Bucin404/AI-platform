@@ -316,20 +316,11 @@ class MistralAdapter(ModelAdapter):
         """Generate response using Mistral - HIGHEST QUALITY with optional streaming."""
         if self._is_loaded and self.model:
             try:
-                # Mistral-7B-Instruct-v0.3 uses [INST] tags format
-                # Convert "User: X\nAssistant:" to "[INST] X [/INST]"
-                if "User:" in prompt and "Assistant:" in prompt:
-                    # Extract user message
-                    parts = prompt.split("User:")
-                    if len(parts) > 1:
-                        user_msg = parts[-1].split("Assistant:")[0].strip()
-                        formatted_prompt = f"[INST] {user_msg} [/INST]"
-                    else:
-                        formatted_prompt = f"[INST] {prompt} [/INST]"
-                else:
-                    formatted_prompt = f"[INST] {prompt} [/INST]"
+                # SIMPLIFIED: Use direct prompt first, test if [INST] format is the issue
+                formatted_prompt = prompt.strip()
                 
-                print(f"🎯 Mistral formatted prompt: {formatted_prompt[:100]}...")
+                print(f"🎯 Mistral RAW prompt: {repr(prompt[:200])}")
+                print(f"🎯 Mistral formatted prompt: {repr(formatted_prompt[:200])}")
                 
                 response = self.model(
                     formatted_prompt,
