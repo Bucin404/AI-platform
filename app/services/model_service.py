@@ -330,10 +330,15 @@ class MistralAdapter(ModelAdapter):
                 
                 if stream:
                     # Return generator for streaming
+                    print(f"🔄 Mistral streaming started...")
+                    token_count = 0
                     for chunk in response:
                         token = chunk['choices'][0]['text']
+                        token_count += 1
+                        print(f"  📦 Chunk {token_count}: {repr(token[:50])}, empty: {not token}")
                         if token:
                             yield token
+                    print(f"  ✅ Mistral streaming done: {token_count} chunks")
                 else:
                     return response['choices'][0]['text'].strip()
             except Exception as e:
