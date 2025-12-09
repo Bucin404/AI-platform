@@ -53,6 +53,19 @@ Default admin credentials:
 
 ## Local Development Setup (Without Docker)
 
+**⚠️ IMPORTANT:** When running locally (not in Docker), you need to:
+1. Use `.env.local.example` instead of `.env.example` 
+2. Use `localhost` instead of Docker service names (`postgres`, `redis`)
+3. Have PostgreSQL running locally, OR use SQLite for simplicity
+
+**Quick SQLite Setup (Easiest):**
+```bash
+cp .env.local.example .env
+# Edit .env and set: DATABASE_URL=sqlite:///app.db
+```
+
+**For issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)**
+
 ### 1. Create Virtual Environment
 
 ```bash
@@ -66,14 +79,46 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Set Up PostgreSQL
+### 3. Set Up Database
 
+**Option A: Use SQLite (Easiest, no setup required)**
 ```bash
-# Create database
+# In .env file:
+DATABASE_URL=sqlite:///app.db
+```
+
+**Option B: Use PostgreSQL**
+
+First, install and start PostgreSQL:
+
+**On macOS:**
+```bash
+brew install postgresql@15
+brew services start postgresql@15
+```
+
+**On Ubuntu:**
+```bash
+sudo apt-get install postgresql postgresql-contrib
+sudo systemctl start postgresql
+```
+
+Then create the database:
+```bash
+# macOS
 createdb aiplatform
 
-# Update .env with your database URL
-DATABASE_URL=postgresql://username:password@localhost:5432/aiplatform
+# Ubuntu
+sudo -u postgres createdb aiplatform
+```
+
+**Important:** Update .env with **localhost**, not 'postgres':
+```bash
+# ✅ Correct for local development
+DATABASE_URL=postgresql://yourusername:yourpassword@localhost:5432/aiplatform
+
+# ❌ Wrong - this is for Docker only
+# DATABASE_URL=postgresql://aiplatform:aiplatform@postgres:5432/aiplatform
 ```
 
 ### 4. Set Up Redis (Optional)
@@ -110,21 +155,46 @@ python run.py
 
 The application will be available at `http://localhost:5000`
 
+## ⚠️ Troubleshooting
+
+Having issues? See **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** for solutions to common problems:
+
+- Database connection errors
+- Redis connection errors  
+- Model loading issues
+- Port conflicts
+- Permission errors
+- And more...
+
 ## Environment Configuration
+
+### Environment Files
+
+**For Docker:** Use `.env.example`
+```bash
+cp .env.example .env
+# Uses 'postgres' and 'redis' service names
+```
+
+**For Local Development:** Use `.env.local.example`
+```bash
+cp .env.local.example .env
+# Uses 'localhost' or SQLite
+```
 
 ### Required Environment Variables
 
-Create a `.env` file based on `.env.example`:
+**For Docker (.env.example):**
 
 ```bash
 # Flask Configuration
 SECRET_KEY=your-secret-key-change-in-production
 DEBUG=False
 
-# Database
+# Database - uses Docker service name 'postgres'
 DATABASE_URL=postgresql://aiplatform:aiplatform@postgres:5432/aiplatform
 
-# Redis (optional)
+# Redis - uses Docker service name 'redis'
 REDIS_URL=redis://redis:6379/0
 
 # Email (Postfix SMTP)
@@ -148,6 +218,19 @@ RATE_LIMIT_ADMIN_TIER=1000
 # Admin
 ADMIN_EMAIL=admin@aiplatform.com
 ADMIN_PASSWORD=change-this-password
+```
+
+**For Local Development (.env.local.example):**
+
+```bash
+# Use localhost for database and redis
+DATABASE_URL=postgresql://aiplatform:aiplatform@localhost:5432/aiplatform
+# Or use SQLite (no PostgreSQL required):
+# DATABASE_URL=sqlite:///app.db
+
+REDIS_URL=redis://localhost:6379/0
+# Or leave empty for in-memory rate limiting:
+# REDIS_URL=
 ```
 
 ## Database Migrations

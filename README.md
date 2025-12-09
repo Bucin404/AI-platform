@@ -75,7 +75,51 @@ docker-compose -f docker-compose.m4.yml exec web flask create-admin
 # See full M4 setup guide: docs/SETUP_M4.md
 ```
 
-### Local Development
+### Local Development (Without Docker)
+
+**Important:** For local development, use `.env.local.example` instead of `.env.example`:
+
+```bash
+# Clone and setup
+git clone https://github.com/Bucin404/AI-platform.git
+cd AI-platform
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure for LOCAL development
+cp .env.local.example .env
+# Edit .env - use localhost for database, or SQLite for simplicity
+
+# Option 1: Use SQLite (no PostgreSQL needed)
+# In .env: DATABASE_URL=sqlite:///app.db
+
+# Option 2: Use local PostgreSQL
+# Install PostgreSQL, create database, then:
+# In .env: DATABASE_URL=postgresql://user:pass@localhost:5432/aiplatform
+
+# Initialize database
+export FLASK_APP=run.py
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
+
+# Download AI models (automatic integration!)
+python download_models.py
+
+# Run application
+python run.py
+
+# Access at http://localhost:5000
+```
+
+**Troubleshooting?** See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common issues and solutions.
+
+### Previous Local Development
 
 ```bash
 # Create virtual environment
