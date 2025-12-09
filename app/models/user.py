@@ -90,12 +90,47 @@ class ConversationSession(db.Model):
         from datetime import timedelta
         return datetime.utcnow() - self.created_at > timedelta(days=1)
     
-    def get_context_messages(self, limit=10):
-        """Get recent messages for context (last N messages)."""
+    def get_context_messages(self, limit=10, max_tokens=1500):
+        """Get recent messages for context with token limit.
+        
+        Args:
+            limit: Maximum number of messages (None for all)
+            max_tokens: Maximum estimated tokens (default 1500 to leave room for response)
+        
+        Returns:
+            List of messages that fit within token budget
+        """
+        # Get messages ordered by most recent
         query = self.messages.order_by(Message.created_at.desc())
+        
+        # If limit specified, apply it
         if limit is not None:
             query = query.limit(limit)
-        return query.all()[::-1]
+        
+        messages = query.all()[::-1]  # Reverse to chronological order
+        
+        # If no max_tokens limit, return all
+        if max_tokens is None:
+            return messages
+        
+        # Estimate tokens and truncate if needed
+        # Simple estimation: ~4 chars = 1 token
+        selected_messages = []
+        estimated_tokens = 0
+        
+        # Start from most recent and work backwards
+        for msg in reversed(messages):
+            msg_tokens = len(msg.content) // 4  # Rough estimate
+            if estimated_tokens + msg_tokens > max_tokens:
+                break
+            selected_messages.insert(0, msg)  # Insert at start to maintain order
+            estimated_tokens += msg_tokens
+        
+        # Always include at least the last message if we have any
+        if not selected_messages and messages:
+            selected_messages = [messages[-1]]
+        
+        return selected_messages
     
     def __repr__(self):
         return f'<ConversationSession {self.id} for User {self.user_id}>'

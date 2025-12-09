@@ -127,8 +127,9 @@ def send_message():
     db.session.add(msg)
     db.session.commit()
     
-    # Get conversation context (ALL messages in session for full memory)
-    context_messages = conv_session.get_context_messages(limit=None)  # None = all messages
+    # Get conversation context (with token limit to avoid exceeding context window)
+    # Most models have 2048 token context, leave ~500 tokens for response
+    context_messages = conv_session.get_context_messages(limit=None, max_tokens=1500)
     
     # Build context for AI
     conversation_history = []
@@ -207,8 +208,8 @@ def stream_message():
     db.session.add(msg)
     db.session.commit()
     
-    # Get conversation history
-    context_messages = conv_session.get_context_messages(limit=None)
+    # Get conversation history (with token limit to avoid exceeding context window)
+    context_messages = conv_session.get_context_messages(limit=None, max_tokens=1500)
     conversation_history = []
     for ctx_msg in context_messages:
         conversation_history.append({

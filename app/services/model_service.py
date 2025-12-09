@@ -1313,9 +1313,9 @@ def get_model_response(prompt, model_name='auto', user=None, history=None, strea
     """
     from flask import current_app
     
-    # Build context from history if provided - FULL CONVERSATION HISTORY
+    # Build context from history if provided with token safety
     if history:
-        # Include ALL messages (both user and assistant) for full context
+        # Include messages for context, but be mindful of token limits
         conversation_context = []
         
         # Patterns to detect and skip mock/fallback responses
@@ -1328,17 +1328,27 @@ def get_model_response(prompt, model_name='auto', user=None, history=None, strea
             "Interesting question! Regarding"
         ]
         
-        for msg in history:  # ALL messages, not just last 5
+        # Build context but estimate tokens to avoid exceeding limit
+        # Rough estimate: 4 chars = 1 token, target max ~1500 tokens for context
+        total_chars = 0
+        max_context_chars = 6000  # ~1500 tokens
+        
+        for msg in history:
             role = msg.get('role', 'user')
             content = msg.get('content', '')
             if content.strip():
                 # Skip messages with mock response patterns
                 is_mock = any(pattern in content for pattern in mock_patterns)
                 if not is_mock:
-                    if role == 'user':
-                        conversation_context.append(f"User: {content}")
-                    else:
-                        conversation_context.append(f"Assistant: {content}")
+                    msg_text = f"User: {content}" if role == 'user' else f"Assistant: {content}"
+                    msg_chars = len(msg_text)
+                    
+                    # Check if adding this message would exceed limit
+                    if total_chars + msg_chars > max_context_chars:
+                        break
+                    
+                    conversation_context.append(msg_text)
+                    total_chars += msg_chars
         
         # Build full conversation history with current prompt
         if conversation_context:
