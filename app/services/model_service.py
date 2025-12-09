@@ -279,8 +279,260 @@ class VicunaAdapter(ModelAdapter):
         return "vicuna"
 
 
-# Initialize models - will auto-load if available
+# NEW BEST MODELS - 2024 Recommendations
+
+class MistralAdapter(ModelAdapter):
+    """Adapter for Mistral-7B-Instruct-v0.3 - BEST GENERAL CHAT MODEL."""
+    
+    def __init__(self, model_path=None):
+        self.model_path = model_path or './models/mistral-7b-instruct-v0.3.Q4_K_M.gguf'
+        self.model = None
+        self._is_loaded = False
+        
+        if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
+            try:
+                print(f"⚡ Loading Mistral-7B with SPEED OPTIMIZATIONS from {self.model_path}...")
+                self.model = Llama(
+                    model_path=self.model_path,
+                    n_ctx=2048,  # Optimal for general chat
+                    n_threads=8,  # Maximum parallel processing
+                    n_batch=512,  # Large batch for speed
+                    n_gpu_layers=0,  # Set to 35+ if GPU available
+                    use_mlock=True,  # Lock memory for speed
+                    use_mmap=True,  # Memory mapping
+                    low_vram=False,
+                    verbose=False
+                )
+                self._is_loaded = True
+                print(f"✅ Mistral-7B loaded - BEST general chat quality!")
+            except Exception as e:
+                print(f"Warning: Could not load Mistral model: {e}")
+                self._is_loaded = False
+    
+    def is_loaded(self):
+        return self._is_loaded
+    
+    def generate(self, prompt, user=None):
+        """Generate response using Mistral - HIGHEST QUALITY."""
+        if self._is_loaded and self.model:
+            try:
+                response = self.model(
+                    prompt,
+                    max_tokens=300,  # Good length for quality
+                    temperature=0.7,  # Balanced creativity
+                    top_p=0.9,
+                    top_k=40,
+                    repeat_penalty=1.1,
+                    stop=["User:", "\n\nUser:", "[INST]", "[/INST]"],
+                    echo=False,
+                    stream=False
+                )
+                return response['choices'][0]['text'].strip()
+            except Exception as e:
+                print(f"Error generating response: {e}")
+                return self._mock_response(prompt)
+        else:
+            return self._mock_response(prompt)
+    
+    def _mock_response(self, prompt):
+        """Fallback mock response."""
+        return f"I can help with general conversation, Q&A, and various tasks. (Mistral model not loaded - using fallback)"
+    
+    def get_name(self):
+        return "mistral"
+
+
+class CodeLlamaAdapter(ModelAdapter):
+    """Adapter for CodeLlama-13B-Instruct - BEST CODING MODEL."""
+    
+    def __init__(self, model_path=None):
+        self.model_path = model_path or './models/codellama-13b-instruct.Q4_K_M.gguf'
+        self.model = None
+        self._is_loaded = False
+        
+        if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
+            try:
+                print(f"⚡ Loading CodeLlama-13B with SPEED OPTIMIZATIONS from {self.model_path}...")
+                self.model = Llama(
+                    model_path=self.model_path,
+                    n_ctx=2048,  # Good for code context
+                    n_threads=8,  # Maximum parallel processing
+                    n_batch=512,  # Large batch for speed
+                    n_gpu_layers=0,  # Set to 35+ if GPU available
+                    use_mlock=True,
+                    use_mmap=True,
+                    low_vram=False,
+                    verbose=False
+                )
+                self._is_loaded = True
+                print(f"✅ CodeLlama-13B loaded - BEST coding quality!")
+            except Exception as e:
+                print(f"Warning: Could not load CodeLlama model: {e}")
+                self._is_loaded = False
+    
+    def is_loaded(self):
+        return self._is_loaded
+    
+    def generate(self, prompt, user=None):
+        """Generate response using CodeLlama - PROFESSIONAL CODE QUALITY."""
+        if self._is_loaded and self.model:
+            try:
+                response = self.model(
+                    prompt,
+                    max_tokens=512,  # Longer for code examples
+                    temperature=0.3,  # Lower for precise code
+                    top_p=0.9,
+                    top_k=40,
+                    repeat_penalty=1.1,
+                    stop=["###", "\n\n\n", "User:"],
+                    echo=False,
+                    stream=False
+                )
+                return response['choices'][0]['text'].strip()
+            except Exception as e:
+                print(f"Error generating response: {e}")
+                return self._mock_response(prompt)
+        else:
+            return self._mock_response(prompt)
+    
+    def _mock_response(self, prompt):
+        """Fallback mock response."""
+        return f"I can help with code generation, debugging, and explanation. (CodeLlama model not loaded - using fallback)\n\n```python\n# Example code\ndef example():\n    pass\n```"
+    
+    def get_name(self):
+        return "codellama"
+
+
+class Llama3Adapter(ModelAdapter):
+    """Adapter for Llama-3-8B-Instruct - META'S LATEST MODEL."""
+    
+    def __init__(self, model_path=None):
+        self.model_path = model_path or './models/llama-3-8b-instruct.Q4_K_M.gguf'
+        self.model = None
+        self._is_loaded = False
+        
+        if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
+            try:
+                print(f"⚡ Loading Llama-3-8B with SPEED OPTIMIZATIONS from {self.model_path}...")
+                self.model = Llama(
+                    model_path=self.model_path,
+                    n_ctx=2048,  # Optimal for documents
+                    n_threads=8,  # Maximum parallel processing
+                    n_batch=512,  # Large batch for speed
+                    n_gpu_layers=0,  # Set to 35+ if GPU available
+                    use_mlock=True,
+                    use_mmap=True,
+                    low_vram=False,
+                    verbose=False
+                )
+                self._is_loaded = True
+                print(f"✅ Llama-3-8B loaded - Meta's latest model!")
+            except Exception as e:
+                print(f"Warning: Could not load Llama-3 model: {e}")
+                self._is_loaded = False
+    
+    def is_loaded(self):
+        return self._is_loaded
+    
+    def generate(self, prompt, user=None):
+        """Generate response using Llama-3 - META'S BEST."""
+        if self._is_loaded and self.model:
+            try:
+                response = self.model(
+                    prompt,
+                    max_tokens=300,  # Good length for documents
+                    temperature=0.7,
+                    top_p=0.9,
+                    top_k=40,
+                    repeat_penalty=1.1,
+                    stop=["<|eot_id|>", "<|start_header_id|>", "User:"],
+                    echo=False,
+                    stream=False
+                )
+                return response['choices'][0]['text'].strip()
+            except Exception as e:
+                print(f"Error generating response: {e}")
+                return self._mock_response(prompt)
+        else:
+            return self._mock_response(prompt)
+    
+    def _mock_response(self, prompt):
+        """Fallback mock response."""
+        return f"I can help with document processing, analysis, and general tasks. (Llama-3 model not loaded - using fallback)"
+    
+    def get_name(self):
+        return "llama3"
+
+
+class HermesAdapter(ModelAdapter):
+    """Adapter for OpenHermes-2.5-Mistral - BEST CREATIVE MODEL."""
+    
+    def __init__(self, model_path=None):
+        self.model_path = model_path or './models/openhermes-2.5-mistral-7b.Q4_K_M.gguf'
+        self.model = None
+        self._is_loaded = False
+        
+        if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
+            try:
+                print(f"⚡ Loading OpenHermes-2.5 with SPEED OPTIMIZATIONS from {self.model_path}...")
+                self.model = Llama(
+                    model_path=self.model_path,
+                    n_ctx=2048,  # Good for conversations
+                    n_threads=8,  # Maximum parallel processing
+                    n_batch=512,  # Large batch for speed
+                    n_gpu_layers=0,  # Set to 35+ if GPU available
+                    use_mlock=True,
+                    use_mmap=True,
+                    low_vram=False,
+                    verbose=False
+                )
+                self._is_loaded = True
+                print(f"✅ OpenHermes-2.5 loaded - BEST creative quality!")
+            except Exception as e:
+                print(f"Warning: Could not load OpenHermes model: {e}")
+                self._is_loaded = False
+    
+    def is_loaded(self):
+        return self._is_loaded
+    
+    def generate(self, prompt, user=None):
+        """Generate response using OpenHermes - CREATIVE & ENGAGING."""
+        if self._is_loaded and self.model:
+            try:
+                response = self.model(
+                    prompt,
+                    max_tokens=350,  # Longer for creative responses
+                    temperature=0.8,  # Higher for creativity
+                    top_p=0.9,
+                    top_k=40,
+                    repeat_penalty=1.1,
+                    stop=["<|im_end|>", "User:", "\n\nUser:"],
+                    echo=False,
+                    stream=False
+                )
+                return response['choices'][0]['text'].strip()
+            except Exception as e:
+                print(f"Error generating response: {e}")
+                return self._mock_response(prompt)
+        else:
+            return self._mock_response(prompt)
+    
+    def _mock_response(self, prompt):
+        """Fallback mock response."""
+        return f"I can help with creative writing, brainstorming, and engaging conversations. (OpenHermes model not loaded - using fallback)"
+    
+    def get_name(self):
+        return "hermes"
+
+
+# Initialize models - NEW BEST MODELS + backwards compatibility
 MODELS = {
+    # New best models (2024)
+    'mistral': MistralAdapter(),
+    'codellama': CodeLlamaAdapter(),
+    'llama3': Llama3Adapter(),
+    'hermes': HermesAdapter(),
+    # Old models (backwards compatibility)
     'llama': LlamaCppAdapter(),
     'gpt4all': GPT4AllAdapter(),
     'deepseek': DeepSeekAdapter(),
