@@ -227,6 +227,11 @@ body.sidebar-collapsed .sidebar-toggle {
     font-size: 1.125rem;
     font-weight: 600;
     color: #1d2131;
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-left: 60px; /* Space for toggle button */
 }
 
 .model-selector {
@@ -1019,7 +1024,7 @@ document.body.classList.add('chat-page');
     <!-- Main Chat Area -->
     <div class="chat-main">
         <div class="chat-header">
-            <div class="chat-title">{{ t.platform_name }}</div>
+            <div class="chat-title" id="sessionTitle">New Chat</div>
             <div class="model-selector">
                 <select id="modelSelect" class="model-select">
                     <option value="auto">🤖 Auto-Select</option>
@@ -1097,6 +1102,9 @@ function sendMessage() {
     if (isFirstMessage) {
         document.querySelector('.welcome-message')?.remove();
         isFirstMessage = false;
+        
+        // Update session title with first user message
+        updateSessionTitle(getSessionTitleFromMessage(message));
     }
     
     // Add user message
@@ -1562,6 +1570,23 @@ function toggleSidebar() {
     document.body.classList.toggle('sidebar-collapsed');
 }
 
+// Update session title in header
+function updateSessionTitle(title) {
+    const sessionTitleEl = document.getElementById('sessionTitle');
+    if (sessionTitleEl) {
+        sessionTitleEl.textContent = title || 'New Chat';
+    }
+}
+
+// Get session title from first message
+function getSessionTitleFromMessage(message) {
+    // Truncate to first 50 characters and add ellipsis if needed
+    if (message.length > 50) {
+        return message.substring(0, 50) + '...';
+    }
+    return message;
+}
+
 async function newChat() {
     try {
         
@@ -1589,6 +1614,9 @@ async function newChat() {
                 </div>
             `;
             isFirstMessage = true;
+            
+            // Reset session title
+            updateSessionTitle('New Chat');
             
             // Refresh session list
             await loadSessions();
@@ -1681,6 +1709,18 @@ async function loadSession(sessionId) {
                 );
             });
             
+            // Update session title from first user message
+            if (data.messages && data.messages.length > 0) {
+                const firstUserMessage = data.messages.find(msg => msg.role === 'user');
+                if (firstUserMessage) {
+                    updateSessionTitle(getSessionTitleFromMessage(firstUserMessage.content));
+                } else {
+                    updateSessionTitle('New Chat');
+                }
+            } else {
+                updateSessionTitle('New Chat');
+            }
+            
             // Update session list to show active
             loadSessions();
             
@@ -1718,6 +1758,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                             msg.role === 'user' ? 'You' : 'AI'
                         );
                     });
+                    
+                    // Update session title from first user message
+                    const firstUserMessage = data.messages.find(msg => msg.role === 'user');
+                    if (firstUserMessage) {
+                        updateSessionTitle(getSessionTitleFromMessage(firstUserMessage.content));
+                    }
+                    
                     isFirstMessage = false;
                 }
             }
