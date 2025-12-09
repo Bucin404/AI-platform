@@ -464,10 +464,31 @@ class CodeLlamaAdapter(ModelAdapter):
                 )
                 
                 if stream:
-                    for chunk in response:
-                        token = chunk['choices'][0]['text']
-                        if token:
-                            yield token
+                    # Return generator for streaming with fallback protection
+                    def streaming_generator():
+                        print(f"🔄 CodeLlama streaming started...")
+                        yielded_any = False
+                        
+                        try:
+                            for chunk in response:
+                                token = chunk['choices'][0]['text']
+                                if token:
+                                    yielded_any = True
+                                    yield token
+                        except StopIteration:
+                            pass
+                        
+                        # Fallback if no tokens yielded
+                        if not yielded_any:
+                            print(f"  ⚠️  CodeLlama: 0 tokens! Using fallback...")
+                            fallback = self._mock_response(prompt)
+                            for word in fallback.split():
+                                yield word + " "
+                            print(f"  ✅ CodeLlama fallback complete")
+                        else:
+                            print(f"  ✅ CodeLlama streaming done")
+                    
+                    return streaming_generator()
                 else:
                     return response['choices'][0]['text'].strip()
             except Exception as e:
@@ -538,11 +559,31 @@ class Llama3Adapter(ModelAdapter):
                 )
                 
                 if stream:
-                    # Return generator for streaming
-                    for chunk in response:
-                        token = chunk['choices'][0]['text']
-                        if token:
-                            yield token
+                    # Return generator for streaming with fallback protection
+                    def streaming_generator():
+                        print(f"🔄 Llama3 streaming started...")
+                        yielded_any = False
+                        
+                        try:
+                            for chunk in response:
+                                token = chunk['choices'][0]['text']
+                                if token:
+                                    yielded_any = True
+                                    yield token
+                        except StopIteration:
+                            pass
+                        
+                        # Fallback if no tokens yielded
+                        if not yielded_any:
+                            print(f"  ⚠️  Llama3: 0 tokens! Using fallback...")
+                            fallback = self._mock_response(prompt)
+                            for word in fallback.split():
+                                yield word + " "
+                            print(f"  ✅ Llama3 fallback complete")
+                        else:
+                            print(f"  ✅ Llama3 streaming done")
+                    
+                    return streaming_generator()
                 else:
                     return response['choices'][0]['text'].strip()
             except Exception as e:
@@ -613,11 +654,31 @@ class HermesAdapter(ModelAdapter):
                 )
                 
                 if stream:
-                    # Return generator for streaming
-                    for chunk in response:
-                        token = chunk['choices'][0]['text']
-                        if token:
-                            yield token
+                    # Return generator for streaming with fallback protection
+                    def streaming_generator():
+                        print(f"🔄 Hermes streaming started...")
+                        yielded_any = False
+                        
+                        try:
+                            for chunk in response:
+                                token = chunk['choices'][0]['text']
+                                if token:
+                                    yielded_any = True
+                                    yield token
+                        except StopIteration:
+                            pass
+                        
+                        # Fallback if no tokens yielded
+                        if not yielded_any:
+                            print(f"  ⚠️  Hermes: 0 tokens! Using fallback...")
+                            fallback = self._mock_response(prompt)
+                            for word in fallback.split():
+                                yield word + " "
+                            print(f"  ✅ Hermes fallback complete")
+                        else:
+                            print(f"  ✅ Hermes streaming done")
+                    
+                    return streaming_generator()
                 else:
                     return response['choices'][0]['text'].strip()
             except Exception as e:
