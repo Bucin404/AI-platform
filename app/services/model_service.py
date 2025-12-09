@@ -525,18 +525,18 @@ class HermesAdapter(ModelAdapter):
         return "hermes"
 
 
-# Initialize models - NEW BEST MODELS + backwards compatibility
+# Initialize models - NEW BEST MODELS ONLY (2024)
 MODELS = {
-    # New best models (2024)
+    # New best models (2024) - ONLY THESE ARE USED
     'mistral': MistralAdapter(),
     'codellama': CodeLlamaAdapter(),
     'llama3': Llama3Adapter(),
     'hermes': HermesAdapter(),
-    # Old models (backwards compatibility)
-    'llama': LlamaCppAdapter(),
-    'gpt4all': GPT4AllAdapter(),
-    'deepseek': DeepSeekAdapter(),
-    'vicuna': VicunaAdapter()
+    # Aliases for backwards compatibility (route to new models)
+    'llama': Llama3Adapter(),  # Route old llama to llama3
+    'gpt4all': MistralAdapter(),  # Route old gpt4all to mistral
+    'deepseek': CodeLlamaAdapter(),  # Route old deepseek to codellama
+    'vicuna': HermesAdapter()  # Route old vicuna to hermes
 }
 
 
@@ -651,7 +651,7 @@ def generate_unique_response_id(prompt):
 
 
 def select_model_for_content(prompt, requested_model=None):
-    """Select appropriate model based on content type.
+    """Select appropriate model based on content type - UPDATED FOR NEW MODELS.
     
     Args:
         prompt: User prompt/message
@@ -668,19 +668,19 @@ def select_model_for_content(prompt, requested_model=None):
     
     content_type = detect_content_type(prompt)
     
-    # Route to appropriate model based on content type
+    # Route to NEW BEST MODELS based on content type
     if content_type == 'code':
-        return 'deepseek'
+        return 'codellama'  # NEW: CodeLlama-13B is best for coding
     elif content_type in ['pdf', 'file']:
-        return 'llama'
+        return 'llama3'  # NEW: Llama-3 is best for documents
     elif content_type in ['image', 'video']:
-        return 'vicuna'
+        return 'hermes'  # NEW: OpenHermes for creative/multimodal
     else:
         try:
-            default_model = current_app.config.get('DEFAULT_MODEL', 'gpt4all')
-            return default_model if default_model in MODELS else 'gpt4all'
+            default_model = current_app.config.get('DEFAULT_MODEL', 'mistral')
+            return default_model if default_model in MODELS else 'mistral'  # NEW: Mistral is best for general
         except RuntimeError:
-            return 'gpt4all'
+            return 'mistral'  # NEW: Default to Mistral
 
 
 def generate_fallback_response(prompt, language='en', variation=0):

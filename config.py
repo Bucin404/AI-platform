@@ -53,8 +53,8 @@ class Config:
     ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@aiplatform.com')
     ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'changeme')
     
-    # Models
-    DEFAULT_MODEL = os.environ.get('DEFAULT_MODEL', 'gpt4all')
+    # Models - UPDATED TO NEW BEST MODELS (2024)
+    DEFAULT_MODEL = os.environ.get('DEFAULT_MODEL', 'mistral')  # NEW: Mistral is best general model
     MODELS_PATH = os.environ.get('MODELS_PATH', './models')
 
 
