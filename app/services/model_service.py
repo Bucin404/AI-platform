@@ -285,7 +285,7 @@ class MistralAdapter(ModelAdapter):
     """Adapter for Mistral-7B-Instruct-v0.3 - BEST GENERAL CHAT MODEL."""
     
     def __init__(self, model_path=None):
-        self.model_path = model_path or './models/mistral-7b-instruct-v0.3.Q4_K_M.gguf'
+        self.model_path = model_path or './models/Mistral-7B-Instruct-v0.3-Q4_K_M.gguf'
         self.model = None
         self._is_loaded = False
         
@@ -407,7 +407,7 @@ class Llama3Adapter(ModelAdapter):
     """Adapter for Llama-3-8B-Instruct - META'S LATEST MODEL."""
     
     def __init__(self, model_path=None):
-        self.model_path = model_path or './models/llama-3-8b-instruct.Q4_K_M.gguf'
+        self.model_path = model_path or './models/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf'
         self.model = None
         self._is_loaded = False
         
