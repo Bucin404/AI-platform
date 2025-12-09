@@ -63,13 +63,19 @@ def create_app(config_name='default'):
     from app.blueprints.main import main_bp
     app.register_blueprint(main_bp)
     
-    # Security headers
+    # Security headers - FIXED CSP for Google Fonts
     @app.after_request
     def set_security_headers(response):
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         response.headers['X-XSS-Protection'] = '1; mode=block'
-        response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; img-src 'self' data: https:;"
+        # Updated CSP to allow Google Fonts
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "img-src 'self' data: https:;"
+        )
         return response
     
     # User loader

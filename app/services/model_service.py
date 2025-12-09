@@ -34,7 +34,7 @@ class ModelAdapter(ABC):
 
 
 class LlamaCppAdapter(ModelAdapter):
-    """Adapter for llama.cpp models."""
+    """Adapter for llama.cpp models - OPTIMIZED FOR MAXIMUM SPEED."""
     
     def __init__(self, model_path=None):
         self.model_path = model_path or './models/llama-2-7b.Q4_K_M.gguf'
@@ -43,16 +43,20 @@ class LlamaCppAdapter(ModelAdapter):
         
         if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
             try:
-                print(f"Loading Llama model from {self.model_path}...")
+                print(f"⚡ Loading Llama model with SPEED OPTIMIZATIONS from {self.model_path}...")
                 self.model = Llama(
                     model_path=self.model_path,
-                    n_ctx=4096,
-                    n_threads=4,
-                    n_gpu_layers=0,  # Adjust for GPU
+                    n_ctx=2048,  # Reduced from 4096 for speed
+                    n_threads=8,  # Increased from 4 for parallel processing
+                    n_batch=512,  # Larger batch for faster processing
+                    n_gpu_layers=0,  # Set to 35+ if GPU available
+                    use_mlock=True,  # Lock memory for faster access
+                    use_mmap=True,  # Memory mapping for speed
+                    low_vram=False,  # Optimize for speed, not memory
                     verbose=False
                 )
                 self._is_loaded = True
-                print(f"✅ Llama model loaded successfully")
+                print(f"✅ Llama model loaded with SPEED OPTIMIZATIONS")
             except Exception as e:
                 print(f"Warning: Could not load Llama model: {e}")
                 self._is_loaded = False
@@ -61,16 +65,19 @@ class LlamaCppAdapter(ModelAdapter):
         return self._is_loaded
     
     def generate(self, prompt, user=None):
-        """Generate response using llama.cpp."""
+        """Generate response using llama.cpp - SPEED OPTIMIZED."""
         if self._is_loaded and self.model:
             try:
                 response = self.model(
                     prompt,
-                    max_tokens=512,
-                    temperature=0.7,
-                    top_p=0.95,
+                    max_tokens=256,  # Reduced from 512 for faster response
+                    temperature=0.8,  # Slightly higher for faster sampling
+                    top_p=0.9,  # Reduced from 0.95 for speed
+                    top_k=40,  # Added for faster sampling
+                    repeat_penalty=1.1,  # Prevent repetition
                     stop=["User:", "\n\nUser:", "\n\nQuestion:"],
-                    echo=False
+                    echo=False,
+                    stream=False  # No streaming for instant response
                 )
                 return response['choices'][0]['text'].strip()
             except Exception as e:
@@ -88,7 +95,7 @@ class LlamaCppAdapter(ModelAdapter):
 
 
 class GPT4AllAdapter(ModelAdapter):
-    """Adapter for GPT4All models."""
+    """Adapter for GPT4All models - OPTIMIZED FOR MAXIMUM SPEED."""
     
     def __init__(self, model_path=None):
         self.model_path = model_path or './models/gpt4all-falcon-newbpe-q4_0.gguf'
@@ -97,16 +104,20 @@ class GPT4AllAdapter(ModelAdapter):
         
         if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
             try:
-                print(f"Loading GPT4All model from {self.model_path}...")
+                print(f"⚡ Loading GPT4All model with SPEED OPTIMIZATIONS from {self.model_path}...")
                 self.model = Llama(
                     model_path=self.model_path,
-                    n_ctx=2048,
-                    n_threads=4,
-                    n_gpu_layers=0,
+                    n_ctx=1024,  # Reduced from 2048 for speed
+                    n_threads=8,  # Increased for parallel processing
+                    n_batch=512,  # Larger batch size
+                    n_gpu_layers=0,  # Set to 35+ if GPU available
+                    use_mlock=True,  # Lock memory
+                    use_mmap=True,  # Memory mapping
+                    low_vram=False,  # Optimize for speed
                     verbose=False
                 )
                 self._is_loaded = True
-                print(f"✅ GPT4All model loaded successfully")
+                print(f"✅ GPT4All model loaded with SPEED OPTIMIZATIONS")
             except Exception as e:
                 print(f"Warning: Could not load GPT4All model: {e}")
                 self._is_loaded = False
@@ -115,16 +126,19 @@ class GPT4AllAdapter(ModelAdapter):
         return self._is_loaded
     
     def generate(self, prompt, user=None):
-        """Generate response using GPT4All."""
+        """Generate response using GPT4All - SPEED OPTIMIZED."""
         if self._is_loaded and self.model:
             try:
                 response = self.model(
                     prompt,
-                    max_tokens=512,
-                    temperature=0.7,
-                    top_p=0.95,
+                    max_tokens=200,  # Reduced from 512 for faster response
+                    temperature=0.8,  # Higher for faster sampling
+                    top_p=0.9,  # Reduced for speed
+                    top_k=40,  # Faster sampling
+                    repeat_penalty=1.1,
                     stop=["User:", "\n\nUser:"],
-                    echo=False
+                    echo=False,
+                    stream=False
                 )
                 return response['choices'][0]['text'].strip()
             except Exception as e:
@@ -142,7 +156,7 @@ class GPT4AllAdapter(ModelAdapter):
 
 
 class DeepSeekAdapter(ModelAdapter):
-    """Adapter for DeepSeek models."""
+    """Adapter for DeepSeek models - OPTIMIZED FOR CODING SPEED."""
     
     def __init__(self, model_path=None):
         self.model_path = model_path or './models/deepseek-coder-6.7b-instruct.Q4_K_M.gguf'
@@ -151,16 +165,20 @@ class DeepSeekAdapter(ModelAdapter):
         
         if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
             try:
-                print(f"Loading DeepSeek model from {self.model_path}...")
+                print(f"⚡ Loading DeepSeek model with SPEED OPTIMIZATIONS from {self.model_path}...")
                 self.model = Llama(
                     model_path=self.model_path,
-                    n_ctx=4096,
-                    n_threads=4,
-                    n_gpu_layers=0,
+                    n_ctx=2048,  # Reduced from 4096 for speed
+                    n_threads=8,  # Increased for parallel processing
+                    n_batch=512,  # Larger batch
+                    n_gpu_layers=0,  # Set to 35+ if GPU available
+                    use_mlock=True,
+                    use_mmap=True,
+                    low_vram=False,
                     verbose=False
                 )
                 self._is_loaded = True
-                print(f"✅ DeepSeek model loaded successfully")
+                print(f"✅ DeepSeek model loaded with SPEED OPTIMIZATIONS")
             except Exception as e:
                 print(f"Warning: Could not load DeepSeek model: {e}")
                 self._is_loaded = False
@@ -169,18 +187,21 @@ class DeepSeekAdapter(ModelAdapter):
         return self._is_loaded
     
     def generate(self, prompt, user=None):
-        """Generate response using DeepSeek."""
+        """Generate response using DeepSeek - SPEED OPTIMIZED."""
         if self._is_loaded and self.model:
             try:
                 # DeepSeek uses a specific prompt format for coding
                 formatted_prompt = f"### Instruction:\n{prompt}\n\n### Response:\n"
                 response = self.model(
                     formatted_prompt,
-                    max_tokens=1024,
-                    temperature=0.2,  # Lower temperature for code
-                    top_p=0.95,
+                    max_tokens=512,  # Reduced from 1024 for speed
+                    temperature=0.3,  # Slightly higher for faster sampling while keeping precision
+                    top_p=0.9,  # Reduced for speed
+                    top_k=40,
+                    repeat_penalty=1.1,
                     stop=["###", "\n\n\n"],
-                    echo=False
+                    echo=False,
+                    stream=False
                 )
                 return response['choices'][0]['text'].strip()
             except Exception as e:
@@ -198,7 +219,7 @@ class DeepSeekAdapter(ModelAdapter):
 
 
 class VicunaAdapter(ModelAdapter):
-    """Adapter for Vicuna models."""
+    """Adapter for Vicuna models - OPTIMIZED FOR CONVERSATIONAL SPEED."""
     
     def __init__(self, model_path=None):
         self.model_path = model_path or './models/vicuna-7b-v1.5.Q4_K_M.gguf'
@@ -207,16 +228,20 @@ class VicunaAdapter(ModelAdapter):
         
         if LLAMA_CPP_AVAILABLE and Path(self.model_path).exists():
             try:
-                print(f"Loading Vicuna model from {self.model_path}...")
+                print(f"⚡ Loading Vicuna model with SPEED OPTIMIZATIONS from {self.model_path}...")
                 self.model = Llama(
                     model_path=self.model_path,
-                    n_ctx=2048,
-                    n_threads=4,
-                    n_gpu_layers=0,
+                    n_ctx=1024,  # Reduced from 2048 for speed
+                    n_threads=8,  # Increased for parallel processing
+                    n_batch=512,  # Larger batch
+                    n_gpu_layers=0,  # Set to 35+ if GPU available
+                    use_mlock=True,
+                    use_mmap=True,
+                    low_vram=False,
                     verbose=False
                 )
                 self._is_loaded = True
-                print(f"✅ Vicuna model loaded successfully")
+                print(f"✅ Vicuna model loaded with SPEED OPTIMIZATIONS")
             except Exception as e:
                 print(f"Warning: Could not load Vicuna model: {e}")
                 self._is_loaded = False
@@ -225,16 +250,19 @@ class VicunaAdapter(ModelAdapter):
         return self._is_loaded
     
     def generate(self, prompt, user=None):
-        """Generate response using Vicuna."""
+        """Generate response using Vicuna - SPEED OPTIMIZED."""
         if self._is_loaded and self.model:
             try:
                 response = self.model(
                     prompt,
-                    max_tokens=512,
-                    temperature=0.7,
-                    top_p=0.95,
+                    max_tokens=256,  # Reduced from 512 for speed
+                    temperature=0.8,  # Higher for faster sampling
+                    top_p=0.9,  # Reduced for speed
+                    top_k=40,
+                    repeat_penalty=1.1,
                     stop=["USER:", "ASSISTANT:"],
-                    echo=False
+                    echo=False,
+                    stream=False
                 )
                 return response['choices'][0]['text'].strip()
             except Exception as e:

@@ -754,7 +754,27 @@ document.body.classList.add('chat-page');
 </div>
 
 <script>
+// ==================== GLOBAL VARIABLES - DEFINED FIRST ====================
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+let currentSessionId = null;
 let isFirstMessage = true;
+
+// Debug CSRF token
+console.log('=== CHAT PAGE INITIALIZED ===');
+console.log('CSRF Token:', csrfToken);
+console.log('CSRF Token present:', csrfToken.length > 0);
+
+if (!csrfToken || csrfToken.length === 0) {
+    console.error('⚠️ CRITICAL: CSRF Token is missing!');
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    if (metaTag) {
+        console.log('Meta tag found:', metaTag.getAttribute('content'));
+    } else {
+        console.error('Meta tag not found in DOM!');
+    }
+}
+
+// ==================== CHAT FUNCTIONS ====================
 
 function sendMessage() {
     const input = document.getElementById('messageInput');
@@ -782,8 +802,7 @@ function sendMessage() {
     // Show typing indicator
     showTypingIndicator();
     
-    // Send to server
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    // Send to server (using global csrfToken)
     fetch('/chat/send', {
         method: 'POST',
         headers: {
@@ -1193,10 +1212,7 @@ async function newChat() {
     }
 }
 
-// Track current session
-let currentSessionId = null;
-
-// Load sessions list
+// Load sessions list (currentSessionId already defined globally)
 async function loadSessions() {
     try {
         const response = await fetch('/chat/sessions');
