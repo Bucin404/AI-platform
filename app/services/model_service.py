@@ -1365,9 +1365,9 @@ def get_model_response(prompt, model_name='auto', user=None, history=None, strea
     """
     from flask import current_app
     
-    print(f"\n=== MODEL SERVICE DEBUG ===")
-    print(f"User prompt: {prompt}")
-    print(f"Requested model: {model_name}")
+    print(f"\n=== MODEL SERVICE DEBUG ===", flush=True)
+    print(f"User prompt: {prompt}", flush=True)
+    print(f"Requested model: {model_name}", flush=True)
     
     # Build context from history if provided - FULL CONVERSATION HISTORY
     if history:
@@ -1411,37 +1411,37 @@ def get_model_response(prompt, model_name='auto', user=None, history=None, strea
     # Auto-select model based on content if requested
     if model_name == 'auto':
         model_name = select_model_for_content(prompt)
-        print(f"Auto-selected model: {model_name}")
+        print(f"Auto-selected model: {model_name}", flush=True)
     
     # Validate model exists
     if model_name not in MODELS:
-        print(f"WARNING: Model '{model_name}' not found in MODELS: {list(MODELS.keys())}")
-        print(f"Available models: {list(MODELS.keys())}")
+        print(f"WARNING: Model '{model_name}' not found in MODELS: {list(MODELS.keys())}", flush=True)
+        print(f"Available models: {list(MODELS.keys())}", flush=True)
         # Default to gpt4all
         model_name = 'gpt4all'
-        print(f"Falling back to: {model_name}")
+        print(f"Falling back to: {model_name}", flush=True)
     
-    print(f"Final selected model: {model_name}")
+    print(f"Final selected model: {model_name}", flush=True)
     
     try:
         model = MODELS[model_name]
-        print(f"Model loaded status: {model.is_loaded()}")
+        print(f"Model loaded status: {model.is_loaded()}", flush=True)
         
         if not model.is_loaded():
-            print(f"WARNING: Model {model_name} is not loaded, will use fallback response")
+            print(f"WARNING: Model {model_name} is not loaded, will use fallback response", flush=True)
         
         # Generate response from model - USER INPUT GOES DIRECTLY HERE
         if stream:
             # Return generator for streaming
-            print(f"Streaming mode enabled")
-            print(f"=== END DEBUG ===\n")
+            print(f"Streaming mode enabled", flush=True)
+            print(f"=== END DEBUG ===\n", flush=True)
             return model.generate(full_prompt, user, stream=True)
         else:
             # Return complete response
             response = model.generate(full_prompt, user, stream=False)
-            print(f"AI response generated: {len(response)} characters")
-            print(f"Response preview: {response[:200]}...")
-            print(f"=== END DEBUG ===\n")
+            print(f"AI response generated: {len(response)} characters", flush=True)
+            print(f"Response preview: {response[:200]}...", flush=True)
+            print(f"=== END DEBUG ===\n", flush=True)
             return response
         
     except Exception as e:
