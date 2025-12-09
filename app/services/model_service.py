@@ -1,7 +1,8 @@
-"""Model service for AI interactions."""
+"""Model service for AI interactions with language detection and unique responses."""
 from abc import ABC, abstractmethod
 import random
 import re
+import hashlib
 from pathlib import Path
 
 # AUTO_INTEGRATED: This file has been automatically integrated with downloaded models
@@ -297,6 +298,58 @@ def detect_content_type(prompt):
     # Check for PDF content
     if any(keyword in prompt_lower for keyword in pdf_keywords):
         return 'pdf'
+
+
+def detect_language(text):
+    """Detect language from user input (Indonesian vs English).
+    
+    Args:
+        text: User input text
+    
+    Returns:
+        str: 'id' for Indonesian, 'en' for English
+    """
+    text_lower = text.lower()
+    
+    # Indonesian indicators
+    id_indicators = [
+        'saya', 'anda', 'dengan', 'untuk', 'ini', 'itu', 'yang', 'adalah', 
+        'dari', 'di', 'ke', 'pada', 'akan', 'telah', 'sudah', 'dapat',
+        'bagaimana', 'mengapa', 'kapan', 'dimana', 'apa', 'siapa',
+        'jelaskan', 'tolong', 'bantu', 'terima kasih', 'maaf',
+        'bisakah', 'dapatkah', 'maukah', 'bisa', 'tidak', 'ya'
+    ]
+    
+    # English indicators
+    en_indicators = [
+        'the', 'and', 'for', 'this', 'that', 'with', 'from', 'is', 'are',
+        'have', 'has', 'had', 'can', 'will', 'would', 'should', 'could',
+        'what', 'where', 'when', 'why', 'how', 'who', 'which',
+        'please', 'help', 'thank', 'thanks', 'sorry', 'yes', 'no'
+    ]
+    
+    # Count indicators
+    id_count = sum(1 for word in id_indicators if word in text_lower)
+    en_count = sum(1 for word in en_indicators if word in text_lower)
+    
+    # Return detected language
+    return 'id' if id_count > en_count else 'en'
+
+
+def generate_unique_response_id(prompt):
+    """Generate unique ID for prompt to ensure different responses.
+    
+    Args:
+        prompt: User prompt
+    
+    Returns:
+        int: Hash value for variation selection
+    """
+    # Create hash from prompt
+    hash_object = hashlib.md5(prompt.encode())
+    hash_hex = hash_object.hexdigest()
+    # Convert to integer for modulo operation
+    return int(hash_hex, 16)
     
     # Check for image content
     if any(keyword in prompt_lower for keyword in image_keywords):
@@ -350,8 +403,423 @@ def select_model_for_content(prompt, requested_model=None):
             return 'gpt4all'
 
 
+def generate_fallback_response(prompt, language='en', variation=0):
+    """Generate language-appropriate fallback response with unique variations.
+    
+    Args:
+        prompt: User prompt
+        language: 'id' or 'en'
+        variation: Variation index (0-4) for uniqueness
+    
+    Returns:
+        str: Unique, language-appropriate response
+    """
+    prompt_lower = prompt.lower()
+    
+    # Detect question type
+    is_how = any(word in prompt_lower for word in ['how', 'bagaimana', 'cara'])
+    is_what = any(word in prompt_lower for word in ['what', 'apa itu', 'apa yang', 'apakah'])
+    is_why = any(word in prompt_lower for word in ['why', 'mengapa', 'kenapa'])
+    is_code = any(word in prompt_lower for word in ['code', 'coding', 'program', 'function', 'kode', 'fungsi'])
+    
+    # Indonesian responses
+    if language == 'id':
+        if is_code:
+            return f"""Saya dapat membantu Anda dengan pemrograman!
+
+```python
+# Contoh struktur kode
+def contoh_fungsi():
+    # Kode Anda di sini
+    hasil = "Halo Dunia"
+    return hasil
+```
+
+**Konsep Penting:**
+- Variabel dan tipe data
+- Struktur kontrol (if/else, loop)
+- Fungsi dan class
+- Error handling
+
+Apakah ada yang ingin Anda pelajari lebih lanjut?"""
+        
+        elif is_how:
+            templates_id = [
+                f"""Mari saya jelaskan cara melakukannya:
+
+**Panduan Langkah demi Langkah:**
+
+1. **Langkah Pertama** - Pahami konsep dasarnya
+2. **Langkah Kedua** - Terapkan prinsip-prinsipnya
+3. **Langkah Ketiga** - Latihan dan penyempurnaan
+
+Apakah Anda butuh penjelasan lebih detail untuk bagian tertentu?""",
+                
+                f"""Saya akan memandu Anda melalui proses ini:
+
+**Tahapan Pelaksanaan:**
+
+• **Persiapan Awal** - Kumpulkan informasi yang diperlukan
+• **Implementasi** - Jalankan langkah-langkah utama
+• **Evaluasi** - Periksa hasil dan optimalkan
+
+Silakan beri tahu saya jika ada bagian yang perlu dijelaskan lebih detail!""",
+                
+                f"""Berikut cara efektif untuk melakukannya:
+
+**Metode yang Disarankan:**
+
+1. Mulai dengan fondasi yang kuat
+2. Bangun secara bertahap
+3. Test dan validasi hasilnya
+4. Iterasi untuk perbaikan
+
+Apakah ini menjawab pertanyaan Anda?"""
+            ]
+            return templates_id[variation % len(templates_id)]
+        
+        elif is_what:
+            templates_id = [
+                f"""**Pemahaman:** {prompt[:50]}...
+
+**Definisi:**
+Berdasarkan pertanyaan Anda, konsep ini melibatkan beberapa aspek penting.
+
+**Karakteristik Utama:**
+- Fitur utama: Fungsi inti dari topik ini
+- Fitur pendukung: Kemampuan tambahan yang mendukung
+- Aplikasi praktis: Penggunaan dalam kehidupan nyata
+
+Apakah Anda ingin penjelasan lebih mendalam?""",
+                
+                f"""**Definisi & Penjelasan**
+
+Topik yang Anda tanyakan adalah konsep fundamental dalam bidangnya.
+
+**Aspek Penting:**
+• Prinsip dasar dan cara kerjanya
+• Manfaat dan kegunaannya
+• Contoh penerapan praktis
+
+Silakan tanya jika ada yang kurang jelas!""",
+                
+                f"""Mari kita bahas konsep ini:
+
+**Inti Pembahasan:**
+Ini adalah topik yang menarik dan berguna untuk dipahami.
+
+**Poin-Poin Kunci:**
+1. Pengertian dasar
+2. Fungsi utama
+3. Cara menggunakannya
+4. Tips praktis
+
+Ada pertanyaan lanjutan?"""
+            ]
+            return templates_id[variation % len(templates_id)]
+        
+        elif is_why:
+            templates_id = [
+                f"""**Mengapa?** Pertanyaan yang bagus!
+
+**Alasan 1: Prinsip Fundamental**
+Ini terjadi karena mekanisme mendasar yang bekerja di baliknya.
+
+**Alasan 2: Pertimbangan Praktis**
+Dari sudut pandang praktis, ini memberikan manfaat yang signifikan.
+
+**Alasan 3: Konteks Lebih Luas**
+Dalam konteks yang lebih luas, ini memiliki implikasi penting.
+
+Apakah ini menjawab pertanyaan Anda?""",
+                
+                f"""Saya akan menjelaskan alasannya:
+
+**Faktor Utama:**
+• Aspek teknis yang mempengaruhi
+• Keuntungan yang diberikan
+• Kebutuhan yang dipenuhi
+
+**Kesimpulan:**
+Kombinasi faktor-faktor ini membuat hal ini penting dan relevan.
+
+Butuh penjelasan lebih detail?""",
+                f"""**Penjelasan Alasan:**
+
+Ada beberapa faktor yang menjelaskan hal ini:
+
+1. **Faktor Pertama** - Dasar teoretis
+2. **Faktor Kedua** - Bukti empiris
+3. **Faktor Ketiga** - Aplikasi praktis
+
+Semoga ini memberikan pemahaman yang lebih baik!"""
+            ]
+            return templates_id[variation % len(templates_id)]
+        
+        else:
+            # General responses in Indonesian
+            templates_id = [
+                f"""Terima kasih atas pertanyaan Anda! Saya akan membantu menjawabnya.
+
+**Poin-Poin Penting:**
+
+• Pertama, mari kita pahami konteks pertanyaan Anda
+• Kedua, saya akan memberikan penjelasan yang relevan
+• Ketiga, kita dapat mendiskusikan aspek spesifik yang Anda butuhkan
+
+Apakah ada bagian tertentu yang ingin Anda eksplorasi lebih dalam?""",
+                
+                f"""Saya mengerti pertanyaan Anda. Mari kita bahas dengan detail:
+
+**Analisis:**
+Topik ini memiliki beberapa aspek menarik yang perlu dipertimbangkan.
+
+**Pembahasan:**
+1. Aspek pertama yang relevan
+2. Hubungan dengan topik terkait
+3. Implikasi praktis
+
+Silakan beri tahu jika Anda butuh klarifikasi!""",
+                
+                f"""Pertanyaan yang menarik! Berikut pandangan saya:
+
+**Penjelasan Utama:**
+- Konsep dasar yang perlu dipahami
+- Aplikasi dalam konteks nyata
+- Tips dan best practices
+
+**Kesimpulan:**
+Ini adalah topik yang berguna untuk dipelajari lebih lanjut.
+
+Ada yang ingin ditanyakan lagi?""",
+                
+                f"""Saya akan membantu menjelaskan topik ini:
+
+**Gambaran Umum:**
+Ini adalah aspek penting yang sering ditanyakan.
+
+**Detail Pembahasan:**
+• Pengertian dan konsep
+• Cara kerja dan mekanisme
+• Manfaat dan penggunaan
+
+Semoga penjelasan ini membantu!""",
+                
+                f"""Mari kita eksplorasi topik ini bersama:
+
+**Pendekatan:**
+1. Memahami dasar-dasarnya
+2. Melihat contoh praktis
+3. Mengap likasikan dalam situasi nyata
+
+**Insight Tambahan:**
+Topik ini sangat relevan dan berguna untuk dikuasai.
+
+Butuh informasi tambahan?"""
+            ]
+            return templates_id[variation % len(templates_id)]
+    
+    # English responses
+    else:
+        if is_code:
+            return f"""I can help you with programming!
+
+```python
+# Example code structure
+def example_function():
+    # Your code here
+    result = "Hello World"
+    return result
+```
+
+**Key Concepts:**
+- Variables and data types
+- Control structures (if/else, loops)
+- Functions and classes
+- Error handling
+
+Would you like to learn more about any specific aspect?"""
+        
+        elif is_how:
+            templates_en = [
+                f"""Let me explain how to do this:
+
+**Step-by-Step Guide:**
+
+1. **First Step** - Understand the fundamentals
+2. **Second Step** - Apply the principles
+3. **Third Step** - Practice and refine
+
+Would you like more details on any particular step?""",
+                
+                f"""I'll guide you through this process:
+
+**Implementation Phases:**
+
+• **Preparation** - Gather necessary information
+• **Execution** - Follow the main steps
+• **Evaluation** - Review and optimize results
+
+Let me know if you need clarification on any part!""",
+                
+                f"""Here's an effective approach:
+
+**Recommended Method:**
+
+1. Start with a solid foundation
+2. Build progressively
+3. Test and validate
+4. Iterate for improvement
+
+Does this answer your question?"""
+            ]
+            return templates_en[variation % len(templates_en)]
+        
+        elif is_what:
+            templates_en = [
+                f"""**Understanding:** {prompt[:50]}...
+
+**Definition:**
+Based on your question, this concept involves several key aspects.
+
+**Main Characteristics:**
+- Primary feature: Core functionality
+- Supporting features: Additional capabilities
+- Practical applications: Real-world usage
+
+Would you like a deeper explanation?""",
+                
+                f"""**Definition & Explanation**
+
+The topic you're asking about is a fundamental concept in its field.
+
+**Important Aspects:**
+• Basic principles and how it works
+• Benefits and use cases
+• Practical implementation examples
+
+Feel free to ask if anything is unclear!""",
+                
+                f"""Let's explore this concept:
+
+**Core Discussion:**
+This is an interesting and useful topic to understand.
+
+**Key Points:**
+1. Basic understanding
+2. Main functions
+3. How to use it
+4. Practical tips
+
+Any follow-up questions?"""
+            ]
+            return templates_en[variation % len(templates_en)]
+        
+        elif is_why:
+            templates_en = [
+                f"""**Why?** Great question!
+
+**Reason 1: Fundamental Principle**
+This occurs due to the underlying mechanisms at work.
+
+**Reason 2: Practical Considerations**
+From a practical standpoint, this provides significant benefits.
+
+**Reason 3: Broader Context**
+In the broader context, this has important implications.
+
+Does this answer your question?""",
+                
+                f"""I'll explain the reasoning:
+
+**Main Factors:**
+• Technical aspects that influence this
+• Advantages it provides
+• Needs it fulfills
+
+**Conclusion:**
+The combination of these factors makes this important and relevant.
+
+Need more details?""",
+                
+                f"""**Explanation of Reasons:**
+
+Several factors explain this:
+
+1. **First Factor** - Theoretical foundation
+2. **Second Factor** - Empirical evidence
+3. **Third Factor** - Practical applications
+
+Hope this provides better understanding!"""
+            ]
+            return templates_en[variation % len(templates_en)]
+        
+        else:
+            # General responses in English
+            templates_en = [
+                f"""Thank you for your question! I'll help answer it.
+
+**Key Points:**
+
+• First, let's understand the context of your question
+• Second, I'll provide relevant explanations
+• Third, we can discuss specific aspects you need
+
+Is there any particular area you'd like to explore further?""",
+                
+                f"""I understand your question. Let's discuss it in detail:
+
+**Analysis:**
+This topic has several interesting aspects to consider.
+
+**Discussion:**
+1. First relevant aspect
+2. Connections to related topics
+3. Practical implications
+
+Let me know if you need clarification!""",
+                
+                f"""Interesting question! Here's my perspective:
+
+**Main Explanation:**
+- Core concepts to understand
+- Real-world applications
+- Tips and best practices
+
+**Conclusion:**
+This is a useful topic to learn more about.
+
+Anything else you'd like to know?""",
+                
+                f"""I'll help explain this topic:
+
+**Overview:**
+This is an important aspect that's frequently asked about.
+
+**Detailed Discussion:**
+• Definitions and concepts
+• How it works and mechanisms
+• Benefits and usage
+
+Hope this explanation helps!""",
+                
+                f"""Let's explore this topic together:
+
+**Approach:**
+1. Understanding the basics
+2. Looking at practical examples
+3. Applying in real situations
+
+**Additional Insight:**
+This topic is very relevant and useful to master.
+
+Need more information?"""
+            ]
+            return templates_en[variation % len(templates_en)]
+
+
 def get_model_response(prompt, model_name='auto', user=None, history=None):
-    """Get response from specified model.
+    """Get response from specified model with language detection and unique variations.
     
     Args:
         prompt: User prompt/message
@@ -360,9 +828,16 @@ def get_model_response(prompt, model_name='auto', user=None, history=None):
         history: Conversation history (list of dicts with 'role' and 'content')
     
     Returns:
-        str: AI response
+        str: AI response in detected language with unique variation
     """
     from flask import current_app
+    
+    # Detect user's language
+    user_language = detect_language(prompt)
+    
+    # Generate unique ID for this specific prompt
+    prompt_hash = generate_unique_response_id(prompt)
+    variation_index = prompt_hash % 5  # 5 different variations
     
     # Build context from history if provided
     if history:
@@ -393,8 +868,12 @@ def get_model_response(prompt, model_name='auto', user=None, history=None):
     
     model = MODELS[model_name]
     
-    # Generate response
+    # Generate response from model
     response = model.generate(full_prompt, user)
+    
+    # If model is not loaded, generate language-appropriate unique response
+    if not model.is_loaded():
+        response = generate_fallback_response(prompt, user_language, variation_index)
     
     return response
 
