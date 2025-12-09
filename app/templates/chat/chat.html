@@ -77,9 +77,13 @@ body.sidebar-collapsed .sidebar-toggle {
     transition: transform 0.3s ease;
 }
 
-.chat-sidebar.collapsed .sidebar-toggle svg {
-    transform: rotate(180deg);
+/* Rotate icon: chevron-right when closed, chevron-left when open */
+body.sidebar-collapsed .sidebar-toggle svg,
+.chat-sidebar.collapsed ~ * .sidebar-toggle svg {
+    transform: rotate(180deg); /* Points left when sidebar is closed */
 }
+
+/* Default state: points right when sidebar is open */
 
 .sidebar-header {
     padding: 24px 20px;
@@ -227,7 +231,7 @@ body.sidebar-collapsed .sidebar-toggle {
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-left: 60px; /* Space for toggle button */
+    margin-left: 32px; /* Align with AI message bubbles */
 }
 
 .user-profile-btn {
@@ -267,6 +271,7 @@ body.sidebar-collapsed .sidebar-toggle {
     display: none;
     z-index: 1000;
     border: 1px solid rgba(0, 0, 0, 0.08);
+    opacity: 1; /* Solid background, not transparent */
 }
 
 .user-dropdown.show {
