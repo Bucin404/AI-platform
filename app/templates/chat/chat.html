@@ -806,6 +806,7 @@ function sendMessage() {
     showTypingIndicator();
     
     // Use fetch POST for SSE streaming (EventSource only supports GET)
+    console.log('🚀 Starting stream request...');
     fetch('/chat/stream', {
         method: 'POST',
         headers: {
@@ -819,8 +820,13 @@ function sendMessage() {
         })
     })
     .then(response => {
+        console.log('📡 Stream response received:', response.status);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        if (!response.body) {
+            throw new Error('Response body is null - streaming not supported');
         }
         
         const reader = response.body.getReader();
@@ -830,17 +836,23 @@ function sendMessage() {
         let messageElement = null;
         let bubbleElement = null;
         
+        console.log('📖 Starting to read stream...');
+        
         function readStream() {
             reader.read().then(({done, value}) => {
                 if (done) {
+                    console.log('✅ Stream complete');
                     button.disabled = false;
                     input.disabled = false;
                     input.focus();
                     return;
                 }
                 
+                console.log('📦 Received chunk, size:', value?.length);
+                
                 // Decode chunk
                 const chunk = decoder.decode(value, {stream: true});
+                console.log('📝 Decoded chunk:', chunk.substring(0, 100));
                 
                 // Parse SSE format: "data: {...}\n\n"
                 const lines = chunk.split('\n');
@@ -848,8 +860,10 @@ function sendMessage() {
                     if (line.startsWith('data: ')) {
                         try {
                             const data = JSON.parse(line.slice(6));
+                            console.log('💬 Parsed data:', data);
                             
                             if (data.error) {
+                                console.error('❌ Error from server:', data.error);
                                 removeTypingIndicator();
                                 addMessage('assistant', 'Sorry, I encountered an error. Please try again.', 'AI');
                                 button.disabled = false;
@@ -859,9 +873,11 @@ function sendMessage() {
                             }
                             
                             if (data.done) {
+                                console.log('🏁 Done signal received');
                                 // Update session ID
                                 if (data.session_id) {
                                     currentSessionId = data.session_id;
+                                    console.log('💾 Session ID updated:', currentSessionId);
                                 }
                                 button.disabled = false;
                                 input.disabled = false;
@@ -870,8 +886,10 @@ function sendMessage() {
                             }
                             
                             if (data.token) {
+                                console.log('🔤 Token received:', data.token);
                                 // Remove typing indicator on first token
                                 if (!messageElement) {
+                                    console.log('🗨️ Creating message element');
                                     removeTypingIndicator();
                                     
                                     // Create message elements
