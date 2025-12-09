@@ -337,11 +337,11 @@ class MistralAdapter(ModelAdapter):
                 if stream:
                     # Return generator for streaming
                     def streaming_generator():
-                        print(f"🔄 Mistral streaming started...")
-                        print(f"📁 Model file: {self.model_path}")
+                        print(f"🔄 Mistral streaming started...", flush=True)
+                        print(f"📁 Model file: {self.model_path}", flush=True)
                         
                         # IMMEDIATE TEST: Yield test token to verify streaming works
-                        print(f"🧪 Sending test token...")
+                        print(f"🧪 Sending test token...", flush=True)
                         yield "Testing... "
                         
                         token_count = 0
@@ -352,8 +352,8 @@ class MistralAdapter(ModelAdapter):
                         try:
                             for chunk in response:
                                 # DEBUG: Show what we're actually receiving
-                                print(f"  🔍 Chunk type: {type(chunk)}")
-                                print(f"  🔍 Chunk content: {repr(chunk)[:200]}")
+                                print(f"  🔍 Chunk type: {type(chunk)}", flush=True)
+                                print(f"  🔍 Chunk content: {repr(chunk)[:200]}", flush=True)
                                 
                                 # Handle llama-cpp-python streaming format
                                 # Streaming may return tokens directly or in dict format

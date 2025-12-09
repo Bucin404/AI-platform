@@ -223,7 +223,7 @@ def stream_message():
             full_response = []
             token_count = 0
             
-            print(f"🚀 Starting streaming response for model: {model_name}")
+            print(f"🚀 Starting streaming response for model: {model_name}", flush=True)
             
             # Get streaming response from AI
             generator = get_model_response(
@@ -234,11 +234,11 @@ def stream_message():
                 stream=True
             )
             
-            print(f"📡 Got generator: {type(generator)}")
+            print(f"📡 Got generator: {type(generator)}", flush=True)
             
             for token in generator:
                 token_count += 1
-                print(f"🔤 Token {token_count}: {repr(token[:50])}")
+                print(f"🔤 Token {token_count}: {repr(token[:50])}", flush=True)
                 full_response.append(token)
                 # Send token as SSE event
                 yield f"data: {json.dumps({'token': token})}\n\n"
