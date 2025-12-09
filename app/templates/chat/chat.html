@@ -802,6 +802,11 @@ function sendMessage() {
         return response.json();
     })
     .then(data => {
+        // Update current session ID from response
+        if (data.session_id) {
+            currentSessionId = data.session_id;
+        }
+        
         removeTypingIndicator();
         if (data.response) {
             addMessage('assistant', data.response, 'AI');
@@ -1200,7 +1205,11 @@ async function loadSession(sessionId) {
             
             // Display messages
             data.messages.forEach(msg => {
-                addMessage(msg.content, msg.role === 'user' ? 'user' : 'assistant', false);
+                addMessage(
+                    msg.role === 'user' ? 'user' : 'assistant',
+                    msg.content,
+                    msg.role === 'user' ? 'You' : 'AI'
+                );
             });
             
             // Update session list to show active
@@ -1234,7 +1243,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (data.messages && data.messages.length > 0) {
                     messagesDiv.innerHTML = '';
                     data.messages.forEach(msg => {
-                        addMessage(msg.content, msg.role === 'user' ? 'user' : 'assistant', false);
+                        addMessage(
+                            msg.role === 'user' ? 'user' : 'assistant',
+                            msg.content,
+                            msg.role === 'user' ? 'You' : 'AI'
+                        );
                     });
                     isFirstMessage = false;
                 }

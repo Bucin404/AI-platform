@@ -54,12 +54,29 @@ class GPT4AllAdapter(ModelAdapter):
         # Clean prompt from context markers
         clean_prompt = prompt.split("Assistant:")[-1].strip() if "Assistant:" in prompt else prompt
         
-        responses = [
-            f"I understand your question. Let me help you with that.\n\nBased on what you're asking, here's a comprehensive response that addresses your needs. The information I'm providing should give you a clear understanding of the topic.\n\nIf you need more details or have follow-up questions, feel free to ask!",
-            f"Great question! I can help you with that.\n\nHere are the key insights:\n\n• This is an important topic that deserves careful consideration\n• There are multiple aspects to consider in your situation\n• I can provide guidance based on best practices\n\nLet me know if you'd like me to elaborate on any specific point!",
-            f"I'll help you with that. Here's what you need to know:\n\nThe answer to your question involves several important factors. I've analyzed your request and can provide relevant information to help you understand this better.\n\nFeel free to ask follow-up questions if you need more clarification!"
-        ]
-        return random.choice(responses)
+        # Extract the actual user query (last 200 chars for relevance)
+        user_query = clean_prompt[-200:] if len(clean_prompt) > 200 else clean_prompt
+        
+        # Generate contextual response based on the query
+        response = f"Based on your question: \"{user_query[:100]}...\"\n\n"
+        
+        # Check for common keywords and provide relevant responses
+        query_lower = user_query.lower()
+        
+        if any(word in query_lower for word in ['how', 'what', 'why', 'when', 'where', 'who']):
+            response += "Let me explain:\n\n"
+            response += f"Regarding your inquiry about {user_query[:50]}..., here are the key points:\n\n"
+            response += "1. First, consider the fundamental concepts involved\n"
+            response += "2. Then, apply these principles to your specific situation\n"
+            response += "3. Finally, evaluate the results and adjust as needed\n\n"
+        else:
+            response += "Here's what I can tell you:\n\n"
+            response += f"Your question touches on important aspects. "
+            response += f"Based on the context provided, I can offer relevant insights and guidance.\n\n"
+        
+        response += "Would you like me to elaborate on any specific aspect?"
+        
+        return response
     
     def get_name(self):
         return "gpt4all"
