@@ -316,14 +316,29 @@ class MistralAdapter(ModelAdapter):
         """Generate response using Mistral - HIGHEST QUALITY with optional streaming."""
         if self._is_loaded and self.model:
             try:
+                # Mistral-7B-Instruct-v0.3 uses [INST] tags format
+                # Convert "User: X\nAssistant:" to "[INST] X [/INST]"
+                if "User:" in prompt and "Assistant:" in prompt:
+                    # Extract user message
+                    parts = prompt.split("User:")
+                    if len(parts) > 1:
+                        user_msg = parts[-1].split("Assistant:")[0].strip()
+                        formatted_prompt = f"[INST] {user_msg} [/INST]"
+                    else:
+                        formatted_prompt = f"[INST] {prompt} [/INST]"
+                else:
+                    formatted_prompt = f"[INST] {prompt} [/INST]"
+                
+                print(f"🎯 Mistral formatted prompt: {formatted_prompt[:100]}...")
+                
                 response = self.model(
-                    prompt,
-                    max_tokens=300,  # Good length for quality
-                    temperature=0.7,  # Balanced creativity
+                    formatted_prompt,
+                    max_tokens=512,  # Increased for better responses
+                    temperature=0.8,  # Higher for better generation
                     top_p=0.9,
                     top_k=40,
                     repeat_penalty=1.1,
-                    stop=["User:", "\n\nUser:", "[INST]", "[/INST]"],
+                    stop=["</s>", "[INST]"],  # Mistral's native stop tokens
                     echo=False,
                     stream=stream  # Enable streaming if requested
                 )
@@ -342,12 +357,15 @@ class MistralAdapter(ModelAdapter):
                 else:
                     return response['choices'][0]['text'].strip()
             except Exception as e:
-                print(f"Error generating response: {e}")
+                print(f"❌ Mistral error: {e}")
+                import traceback
+                traceback.print_exc()
                 if stream:
                     yield self._mock_response(prompt)
                 else:
                     return self._mock_response(prompt)
         else:
+            print(f"⚠️  Mistral model not loaded, using fallback")
             if stream:
                 yield self._mock_response(prompt)
             else:
