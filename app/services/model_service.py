@@ -1445,15 +1445,17 @@ def get_model_response(prompt, model_name='auto', user=None, history=None, strea
             return response
         
     except Exception as e:
-        print(f"ERROR in get_model_response: {str(e)}")
-        print(f"Error type: {type(e).__name__}")
+        print(f"ERROR in get_model_response: {str(e)}", flush=True)
+        print(f"Error type: {type(e).__name__}", flush=True)
         import traceback
-        print(f"Traceback: {traceback.format_exc()}")
-        print(f"=== END DEBUG (ERROR) ===\n")
+        print(f"Traceback: {traceback.format_exc()}", flush=True)
+        print(f"=== END DEBUG (ERROR) ===\n", flush=True)
         
         # Return user-friendly error message
         if stream:
-            yield f"AI model error: {str(e)}"
+            def error_generator():
+                yield f"AI model error: {str(e)}"
+            return error_generator()
         else:
             raise Exception(f"AI model error: {str(e)}")
 
