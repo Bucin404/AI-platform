@@ -209,13 +209,14 @@ def select_model_for_content(prompt, requested_model=None):
             return 'gpt4all'
 
 
-def get_model_response(prompt, model_name='auto', user=None):
-    """Get response from specified model.
+def get_model_response(prompt, model_name='auto', user=None, history=None):
+    """Get response from specified model with conversation context.
     
     Args:
         prompt: User prompt/message
         model_name: Model to use ('auto' for automatic selection)
         user: User object
+        history: List of previous messages for context (optional)
     
     Returns:
         str: AI response
@@ -236,9 +237,24 @@ def get_model_response(prompt, model_name='auto', user=None):
     
     model = MODELS[model_name]
     
+    # Build context-aware prompt if history provided
+    if history and len(history) > 0:
+        # Build context string from conversation history
+        context_parts = ["Previous conversation:"]
+        for msg in history[-10:]:  # Last 10 messages for context
+            role = "User" if msg['role'] == 'user' else "Assistant"
+            context_parts.append(f"{role}: {msg['content'][:200]}")  # Limit each message to 200 chars
+        
+        context_parts.append(f"\nUser: {prompt}")
+        context_parts.append("Assistant:")
+        
+        full_prompt = "\n".join(context_parts)
+    else:
+        full_prompt = prompt
+    
     # Add content type info to response for debugging in mock mode
     content_type = detect_content_type(prompt)
-    response = model.generate(prompt, user)
+    response = model.generate(full_prompt, user)
     
     # Add routing info in development
     if content_type != 'general':

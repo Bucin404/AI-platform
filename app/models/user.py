@@ -24,6 +24,7 @@ class User(UserMixin, db.Model):
     
     # Relationships
     messages = db.relationship('Message', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    sessions = db.relationship('ConversationSession', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     transactions = db.relationship('Transaction', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
     def set_password(self, password):
@@ -58,12 +59,39 @@ class User(UserMixin, db.Model):
         return f'<User {self.username}>'
 
 
+class ConversationSession(db.Model):
+    """Conversation session model for organizing chat history."""
+    __tablename__ = 'conversation_sessions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Relationships
+    messages = db.relationship('Message', backref='session', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def is_expired(self):
+        """Check if session is older than 24 hours."""
+        from datetime import timedelta
+        return datetime.utcnow() - self.created_at > timedelta(days=1)
+    
+    def get_context_messages(self, limit=10):
+        """Get recent messages for context (last N messages)."""
+        return self.messages.order_by(Message.created_at.desc()).limit(limit).all()[::-1]
+    
+    def __repr__(self):
+        return f'<ConversationSession {self.id} for User {self.user_id}>'
+
+
 class Message(db.Model):
     """Chat message model."""
     __tablename__ = 'messages'
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    session_id = db.Column(db.Integer, db.ForeignKey('conversation_sessions.id'), nullable=True)
     role = db.Column(db.String(20), nullable=False)  # user, assistant, system
     content = db.Column(db.Text, nullable=False)
     model = db.Column(db.String(50), nullable=True)
