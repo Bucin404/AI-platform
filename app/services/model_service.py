@@ -333,7 +333,6 @@ class MistralAdapter(ModelAdapter):
                 if stream:
                     # Return generator for streaming
                     def streaming_generator():
-                        token_count = 0
                         empty_count = 0
                         max_empty = 10  # After 10 empty iterations, use fallback
                         yielded_any = False
@@ -349,13 +348,9 @@ class MistralAdapter(ModelAdapter):
                                 else:
                                     token = str(chunk) if chunk is not None else ''
                                 
-                                print(f"  🔍 Extracted token: {repr(token)[:100]}")
-                                token_count += 1
-                                
                                 # FIXED: Don't filter empty/whitespace tokens - yield them all (except None)
                                 # This ensures SSE counter increments even with empty chunks
                                 if token is not None:
-                                    token_count += 1
                                     if token:  # Only track non-empty as "real" tokens
                                         empty_count = 0
                                         yielded_any = True
