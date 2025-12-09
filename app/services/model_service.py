@@ -50,33 +50,43 @@ class GPT4AllAdapter(ModelAdapter):
     
     def generate(self, prompt, user=None):
         """Generate response using GPT4All."""
-        # Mock implementation - replace with actual GPT4All integration
+        # Mock implementation - provides varied responses based on actual query content
         # Clean prompt from context markers
         clean_prompt = prompt.split("Assistant:")[-1].strip() if "Assistant:" in prompt else prompt
         
-        # Extract the actual user query (last 200 chars for relevance)
-        user_query = clean_prompt[-200:] if len(clean_prompt) > 200 else clean_prompt
-        
-        # Generate contextual response based on the query
-        response = f"Based on your question: \"{user_query[:100]}...\"\n\n"
-        
-        # Check for common keywords and provide relevant responses
+        # Extract actual user query
+        user_query = clean_prompt.strip()
         query_lower = user_query.lower()
         
-        if any(word in query_lower for word in ['how', 'what', 'why', 'when', 'where', 'who']):
-            response += "Let me explain:\n\n"
-            response += f"Regarding your inquiry about {user_query[:50]}..., here are the key points:\n\n"
-            response += "1. First, consider the fundamental concepts involved\n"
-            response += "2. Then, apply these principles to your specific situation\n"
-            response += "3. Finally, evaluate the results and adjust as needed\n\n"
+        # Provide contextual mock responses based on query content
+        # Python/coding related
+        if any(word in query_lower for word in ['python', 'code', 'function', 'programming', 'debug']):
+            return f"I can help you with Python programming!\n\nRegarding your question about: \"{user_query[:80]}...\"\n\nHere's what you need to know:\n\n```python\n# Example code structure\ndef example_function():\n    # Your code here\n    pass\n```\n\nPython is a powerful language. Key concepts:\n- Functions and classes\n- Data structures (lists, dicts)\n- Error handling\n- Libraries and modules\n\nWould you like more specific guidance?"
+        
+        # General how-to questions
+        elif 'how' in query_lower or 'cara' in query_lower:
+            return f"Let me explain how to do this:\n\n**Your Question:** {user_query[:100]}\n\n**Step-by-Step Guide:**\n\n1. **First Step** - Understand the fundamentals\n2. **Second Step** - Apply the concepts\n3. **Third Step** - Practice and refine\n\n**Important Points:**\n- Start with basics\n- Build progressively\n- Test thoroughly\n\nNeed more details on any specific step?"
+        
+        # What questions
+        elif 'what' in query_lower or 'apa' in query_lower:
+            return f"**Understanding:** {user_query[:80]}\n\n**Definition:**\nBased on your question, this concept involves several key aspects that work together to achieve specific goals.\n\n**Key Characteristics:**\n- Primary feature: Core functionality\n- Secondary feature: Supporting capabilities\n- Applications: Real-world uses\n\n**Common Uses:**\nThis is typically used in situations where you need efficient, reliable solutions.\n\n**Want to learn more about specific aspects?**"
+        
+        # Why questions
+        elif 'why' in query_lower or 'mengapa' in query_lower or 'kenapa' in query_lower:
+            return f"**Why?** Great question!\n\nRegarding: \"{user_query[:80]}\"\n\n**Reason 1: Fundamental Principle**\nThis happens because of underlying mechanisms that govern how things work.\n\n**Reason 2: Practical Considerations**\nFrom a practical standpoint, this approach offers several advantages.\n\n**Reason 3: Historical Context**\nThis has evolved over time based on experience and best practices.\n\n**In Summary:**\nThe key is understanding the relationship between cause and effect.\n\nDoes this answer your question?"
+        
+        # General conversation
         else:
-            response += "Here's what I can tell you:\n\n"
-            response += f"Your question touches on important aspects. "
-            response += f"Based on the context provided, I can offer relevant insights and guidance.\n\n"
-        
-        response += "Would you like me to elaborate on any specific aspect?"
-        
-        return response
+            responses = [
+                f"Thanks for your question: \"{user_query[:80]}\"\n\nHere's my response:\n\nThis is an interesting topic that many people ask about. Let me break it down:\n\n**Main Points:**\n- Key aspect 1: Important consideration\n- Key aspect 2: Related factor\n- Key aspect 3: Practical application\n\n**Recommendation:**\nBased on your question, I'd suggest focusing on understanding the fundamentals first, then building on that knowledge.\n\nWhat specific aspect would you like to explore further?",
+                
+                f"I understand you're asking about:\n\"{user_query[:80]}\"\n\nHere's what I can tell you:\n\n**Context:**\nThis topic is relevant in many situations where understanding is important.\n\n**Key Information:**\n• Point 1: Core concept\n• Point 2: Supporting details  \n• Point 3: Practical insights\n\n**Next Steps:**\nConsider how this applies to your specific situation.\n\nNeed clarification on anything?",
+                
+                f"**Your Query:** {user_query[:80]}\n\n**My Response:**\n\nLet me address this comprehensively:\n\n1. **Background:** Understanding the context is crucial\n2. **Analysis:** Breaking down the components\n3. **Application:** How to use this knowledge\n\n**Practical Tips:**\n- Start with clear goals\n- Take systematic approach\n- Verify results\n\nShall I elaborate on any particular point?"
+            ]
+            import random
+            return random.choice(responses)
+    
     
     def get_name(self):
         return "gpt4all"

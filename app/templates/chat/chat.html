@@ -1070,6 +1070,49 @@ function addMessage(role, content, sender) {
     }
 }
 
+// Add instant message display (no typing animation) for loading sessions
+function addMessageInstant(role, content, sender) {
+    const messagesDiv = document.getElementById('chatMessages');
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = `message-wrapper ${role}`;
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.textContent = sender.charAt(0).toUpperCase();
+    
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    
+    const time = document.createElement('div');
+    time.className = 'message-time';
+    const now = new Date();
+    time.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+    messageContent.appendChild(bubble);
+    messageContent.appendChild(time);
+    
+    if (role === 'user') {
+        wrapper.appendChild(messageContent);
+        wrapper.appendChild(avatar);
+        bubble.textContent = content;
+    } else {
+        // AI response - render markdown instantly (no typing animation)
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(messageContent);
+        
+        // Render markdown
+        const rendered = renderMarkdown(content);
+        bubble.innerHTML = rendered;
+    }
+    
+    messagesDiv.appendChild(wrapper);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
 function showTypingIndicator() {
     const messagesDiv = document.getElementById('chatMessages');
     
@@ -1203,9 +1246,9 @@ async function loadSession(sessionId) {
             const messagesDiv = document.getElementById('chatMessages');
             messagesDiv.innerHTML = '';
             
-            // Display messages
+            // Display messages instantly (no typing animation for loading sessions)
             data.messages.forEach(msg => {
-                addMessage(
+                addMessageInstant(
                     msg.role === 'user' ? 'user' : 'assistant',
                     msg.content,
                     msg.role === 'user' ? 'You' : 'AI'
@@ -1234,7 +1277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Load session list
             await loadSessions();
             
-            // Load messages from current session
+            // Load messages from current session (instantly, no typing animation)
             const response = await fetch(`/chat/session/${currentSessionId}`);
             if (response.ok) {
                 const data = await response.json();
@@ -1243,7 +1286,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (data.messages && data.messages.length > 0) {
                     messagesDiv.innerHTML = '';
                     data.messages.forEach(msg => {
-                        addMessage(
+                        addMessageInstant(
                             msg.role === 'user' ? 'user' : 'assistant',
                             msg.content,
                             msg.role === 'user' ? 'You' : 'AI'
