@@ -312,8 +312,8 @@ class MistralAdapter(ModelAdapter):
     def is_loaded(self):
         return self._is_loaded
     
-    def generate(self, prompt, user=None):
-        """Generate response using Mistral - HIGHEST QUALITY."""
+    def generate(self, prompt, user=None, stream=False):
+        """Generate response using Mistral - HIGHEST QUALITY with optional streaming."""
         if self._is_loaded and self.model:
             try:
                 response = self.model(
@@ -325,14 +325,28 @@ class MistralAdapter(ModelAdapter):
                     repeat_penalty=1.1,
                     stop=["User:", "\n\nUser:", "[INST]", "[/INST]"],
                     echo=False,
-                    stream=False
+                    stream=stream  # Enable streaming if requested
                 )
-                return response['choices'][0]['text'].strip()
+                
+                if stream:
+                    # Return generator for streaming
+                    for chunk in response:
+                        token = chunk['choices'][0]['text']
+                        if token:
+                            yield token
+                else:
+                    return response['choices'][0]['text'].strip()
             except Exception as e:
                 print(f"Error generating response: {e}")
-                return self._mock_response(prompt)
+                if stream:
+                    yield self._mock_response(prompt)
+                else:
+                    return self._mock_response(prompt)
         else:
-            return self._mock_response(prompt)
+            if stream:
+                yield self._mock_response(prompt)
+            else:
+                return self._mock_response(prompt)
     
     def _mock_response(self, prompt):
         """Fallback mock response."""
@@ -373,8 +387,8 @@ class CodeLlamaAdapter(ModelAdapter):
     def is_loaded(self):
         return self._is_loaded
     
-    def generate(self, prompt, user=None):
-        """Generate response using CodeLlama - PROFESSIONAL CODE QUALITY."""
+    def generate(self, prompt, user=None, stream=False):
+        """Generate response using CodeLlama - PROFESSIONAL CODE QUALITY with optional streaming."""
         if self._is_loaded and self.model:
             try:
                 response = self.model(
@@ -386,12 +400,22 @@ class CodeLlamaAdapter(ModelAdapter):
                     repeat_penalty=1.1,
                     stop=["###", "\n\n\n", "User:"],
                     echo=False,
-                    stream=False
+                    stream=stream  # Enable streaming if requested
                 )
-                return response['choices'][0]['text'].strip()
+                
+                if stream:
+                    for chunk in response:
+                        token = chunk['choices'][0]['text']
+                        if token:
+                            yield token
+                else:
+                    return response['choices'][0]['text'].strip()
             except Exception as e:
                 print(f"Error generating response: {e}")
-                return self._mock_response(prompt)
+                if stream:
+                    yield self._mock_response(prompt)
+                else:
+                    return self._mock_response(prompt)
         else:
             return self._mock_response(prompt)
     
@@ -1098,7 +1122,7 @@ Need more information?"""
             return templates_en[variation % len(templates_en)]
 
 
-def get_model_response(prompt, model_name='auto', user=None, history=None):
+def get_model_response(prompt, model_name='auto', user=None, history=None, stream=False):
     """Get response from specified model - sends user input directly to AI.
     
     Args:
@@ -1106,9 +1130,10 @@ def get_model_response(prompt, model_name='auto', user=None, history=None):
         model_name: Model to use ('auto' for automatic selection)
         user: User object
         history: Conversation history (list of dicts with 'role' and 'content')
+        stream: If True, returns generator for streaming responses
     
     Returns:
-        str: AI response directly from model
+        str or generator: AI response directly from model
     """
     from flask import current_app
     
@@ -1116,23 +1141,24 @@ def get_model_response(prompt, model_name='auto', user=None, history=None):
     print(f"User prompt: {prompt}")
     print(f"Requested model: {model_name}")
     
-    # Build context from history if provided - ONLY USER MESSAGES
+    # Build context from history if provided - FULL CONVERSATION HISTORY
     if history:
-        # Only include recent user messages for context, NOT assistant responses
-        user_messages = []
-        for msg in history[-5:]:  # Last 5 messages for context (reduced for clarity)
+        # Include ALL messages (both user and assistant) for full context
+        conversation_context = []
+        for msg in history:  # ALL messages, not just last 5
             role = msg.get('role', 'user')
             content = msg.get('content', '')
-            # ONLY add user messages to context, skip assistant responses
-            if role == 'user' and content.strip():
-                user_messages.append(content)
+            if content.strip():
+                if role == 'user':
+                    conversation_context.append(f"User: {content}")
+                else:
+                    conversation_context.append(f"Assistant: {content}")
         
-        # If we have previous user messages, add them as context
-        if user_messages:
-            context = "Previous questions: " + " | ".join(user_messages)
-            full_prompt = f"{context}\n\nCurrent question:\nUser: {prompt}\nAssistant:"
+        # Build full conversation history with current prompt
+        if conversation_context:
+            context = "\n".join(conversation_context)
+            full_prompt = f"{context}\nUser: {prompt}\nAssistant:"
         else:
-            # No previous user context, just current prompt
             full_prompt = f"User: {prompt}\nAssistant:"
     else:
         # User's prompt goes DIRECTLY to AI model
@@ -1163,13 +1189,18 @@ def get_model_response(prompt, model_name='auto', user=None, history=None):
             print(f"WARNING: Model {model_name} is not loaded, will use fallback response")
         
         # Generate response from model - USER INPUT GOES DIRECTLY HERE
-        response = model.generate(full_prompt, user)
-        
-        print(f"AI response generated: {len(response)} characters")
-        print(f"Response preview: {response[:200]}...")
-        print(f"=== END DEBUG ===\n")
-        
-        return response
+        if stream:
+            # Return generator for streaming
+            print(f"Streaming mode enabled")
+            print(f"=== END DEBUG ===\n")
+            return model.generate(full_prompt, user, stream=True)
+        else:
+            # Return complete response
+            response = model.generate(full_prompt, user, stream=False)
+            print(f"AI response generated: {len(response)} characters")
+            print(f"Response preview: {response[:200]}...")
+            print(f"=== END DEBUG ===\n")
+            return response
         
     except Exception as e:
         print(f"ERROR in get_model_response: {str(e)}")
@@ -1179,7 +1210,10 @@ def get_model_response(prompt, model_name='auto', user=None, history=None):
         print(f"=== END DEBUG (ERROR) ===\n")
         
         # Return user-friendly error message
-        raise Exception(f"AI model error: {str(e)}")
+        if stream:
+            yield f"AI model error: {str(e)}"
+        else:
+            raise Exception(f"AI model error: {str(e)}")
 
 
 def get_available_models():

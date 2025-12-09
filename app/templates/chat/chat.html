@@ -531,6 +531,9 @@ body.chat-page footer {
     font-size: 0.875rem;
     line-height: 1.6;
     overflow-x: auto;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .code-block code {
@@ -802,47 +805,96 @@ function sendMessage() {
     // Show typing indicator
     showTypingIndicator();
     
-    // Send to server (using global csrfToken)
-    fetch('/chat/send', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-        },
-        body: JSON.stringify({
-            message: message,
-            model: model
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => Promise.reject(err));
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Update current session ID from response
-        if (data.session_id) {
-            currentSessionId = data.session_id;
+    // Use EventSource for SSE streaming
+    const eventSource = new EventSource(`/chat/stream?message=${encodeURIComponent(message)}&model=${encodeURIComponent(model)}`);
+    
+    let fullResponse = '';
+    let messageElement = null;
+    let bubbleElement = null;
+    
+    eventSource.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        if (data.error) {
+            removeTypingIndicator();
+            addMessage('assistant', 'Sorry, I encountered an error. Please try again.', 'AI');
+            eventSource.close();
+            button.disabled = false;
+            input.disabled = false;
+            input.focus();
+            return;
         }
         
-        removeTypingIndicator();
-        if (data.response) {
-            addMessage('assistant', data.response, 'AI');
-        } else if (data.error) {
-            addMessage('assistant', 'Sorry, there was an error: ' + data.error, 'AI');
+        if (data.done) {
+            // Update session ID
+            if (data.session_id) {
+                currentSessionId = data.session_id;
+            }
+            eventSource.close();
+            button.disabled = false;
+            input.disabled = false;
+            input.focus();
+            return;
         }
-    })
-    .catch(error => {
+        
+        if (data.token) {
+            // Remove typing indicator on first token
+            if (!messageElement) {
+                removeTypingIndicator();
+                
+                // Create message elements
+                const messagesDiv = document.getElementById('chatMessages');
+                const wrapper = document.createElement('div');
+                wrapper.className = 'message-wrapper assistant';
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.textContent = 'A';
+                
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                
+                bubbleElement = document.createElement('div');
+                bubbleElement.className = 'message-bubble';
+                
+                const time = document.createElement('div');
+                time.className = 'message-time';
+                const now = new Date();
+                time.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                messageContent.appendChild(bubbleElement);
+                messageContent.appendChild(time);
+                wrapper.appendChild(avatar);
+                wrapper.appendChild(messageContent);
+                messagesDiv.appendChild(wrapper);
+                
+                messageElement = wrapper;
+            }
+            
+            // Append token to response
+            fullResponse += data.token;
+            
+            // Render markdown and update bubble
+            const rendered = renderMarkdown(fullResponse);
+            bubbleElement.innerHTML = rendered;
+            
+            // Auto-scroll
+            const messagesDiv = document.getElementById('chatMessages');
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    };
+    
+    eventSource.onerror = function(error) {
+        console.error('EventSource error:', error);
         removeTypingIndicator();
-        addMessage('assistant', 'Sorry, I encountered an error. Please try again.', 'AI');
-        console.error('Error:', error);
-    })
-    .finally(() => {
+        if (!messageElement) {
+            addMessage('assistant', 'Sorry, I encountered an error. Please try again.', 'AI');
+        }
+        eventSource.close();
         button.disabled = false;
         input.disabled = false;
         input.focus();
-    });
+    };
 }
 
 // Markdown rendering function

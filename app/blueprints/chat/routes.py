@@ -1,8 +1,9 @@
 """Chat routes."""
-from flask import render_template, jsonify, request, session
+from flask import render_template, jsonify, request, session, Response, stream_with_context
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
+import json
 from app.blueprints.chat import chat_bp
 from app.models.user import Message, ConversationSession
 from app.models.file_attachment import FileAttachment
@@ -126,8 +127,8 @@ def send_message():
     db.session.add(msg)
     db.session.commit()
     
-    # Get conversation context (last 10 messages)
-    context_messages = conv_session.get_context_messages(limit=10)
+    # Get conversation context (ALL messages in session for full memory)
+    context_messages = conv_session.get_context_messages(limit=None)  # None = all messages
     
     # Build context for AI
     conversation_history = []
@@ -168,6 +169,91 @@ def send_message():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@chat_bp.route('/stream', methods=['POST'])
+@login_required
+def stream_message():
+    """Stream AI response in real-time using Server-Sent Events (SSE)."""
+    # Check rate limit
+    rate_limit_ok, message = check_rate_limit(current_user)
+    if not rate_limit_ok:
+        return jsonify({'error': message}), 429
+    
+    # Get request data
+    data = request.get_json() if request.is_json else request.form.to_dict()
+    user_message = data.get('message', '').strip()
+    model_name = data.get('model', 'auto')
+    
+    if not user_message:
+        return jsonify({'error': 'Message cannot be empty'}), 400
+    
+    # Check premium requirements
+    premium_models = ['code', 'deepseek', 'document', 'llama', 'image', 'vicuna']
+    if model_name in premium_models and not current_user.can_use_feature(model_name):
+        return jsonify({'error': 'This feature requires Premium subscription', 'upgrade_required': True}), 403
+    
+    # Get or create session
+    conv_session = get_or_create_session(current_user.id)
+    
+    # Save user message
+    msg = Message(
+        user_id=current_user.id,
+        session_id=conv_session.id,
+        role='user',
+        content=user_message,
+        model=model_name
+    )
+    db.session.add(msg)
+    db.session.commit()
+    
+    # Get conversation history
+    context_messages = conv_session.get_context_messages(limit=None)
+    conversation_history = []
+    for ctx_msg in context_messages:
+        conversation_history.append({
+            'role': ctx_msg.role,
+            'content': ctx_msg.content
+        })
+    
+    # Stream AI response
+    @stream_with_context
+    def generate():
+        try:
+            full_response = []
+            
+            # Get streaming response from AI
+            for token in get_model_response(
+                user_message,
+                model_name,
+                current_user,
+                history=conversation_history,
+                stream=True
+            ):
+                full_response.append(token)
+                # Send token as SSE event
+                yield f"data: {json.dumps({'token': token})}\n\n"
+            
+            # Save complete response to database
+            complete_response = ''.join(full_response)
+            response_msg = Message(
+                user_id=current_user.id,
+                session_id=conv_session.id,
+                role='assistant',
+                content=complete_response,
+                model=model_name
+            )
+            db.session.add(response_msg)
+            conv_session.updated_at = datetime.utcnow()
+            db.session.commit()
+            
+            # Send completion event
+            yield f"data: {json.dumps({'done': True, 'message_id': response_msg.id, 'session_id': conv_session.id})}\n\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+    
+    return Response(generate(), mimetype='text/event-stream')
 
 
 @chat_bp.route('/history')
