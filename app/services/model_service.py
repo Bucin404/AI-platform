@@ -348,6 +348,11 @@ class MistralAdapter(ModelAdapter):
                     def streaming_generator():
                         print(f"🔄 Mistral streaming started...")
                         print(f"📁 Model file: {self.model_path}")
+                        
+                        # IMMEDIATE TEST: Yield test token to verify streaming works
+                        print(f"🧪 Sending test token...")
+                        yield "Testing... "
+                        
                         token_count = 0
                         empty_count = 0
                         max_empty = 10  # After 10 empty iterations, use fallback
@@ -372,19 +377,23 @@ class MistralAdapter(ModelAdapter):
                                         print(f"  ⚠️  Too many empty chunks! Using fallback response...")
                                         fallback = self._mock_response(prompt)
                                         words = fallback.split()
-                                        for word in words:
+                                        print(f"  📝 Starting fallback: {len(words)} words")
+                                        for i, word in enumerate(words, 1):
+                                            print(f"  📝 Fallback word {i}: {word}")
                                             yield word + " "
                                         print(f"  ✅ Fallback complete: {len(words)} words")
                                         return
                         except StopIteration:
                             pass
                         
-                        # Check if we yielded anything at all
+                        # Check if we yielded anything at all (besides test token)
                         if not yielded_any:
                             print(f"  ⚠️  Generator completed with 0 tokens! Using fallback...")
                             fallback = self._mock_response(prompt)
                             words = fallback.split()
-                            for word in words:
+                            print(f"  📝 Starting fallback: {len(words)} words")
+                            for i, word in enumerate(words, 1):
+                                print(f"  📝 Fallback word {i}: {word}")
                                 yield word + " "
                             print(f"  ✅ Fallback complete: {len(words)} words")
                         else:
