@@ -844,86 +844,52 @@ function copyCode(button) {
 
 // Streaming typing effect - true character-by-character animation
 function typeMessage(element, htmlContent, callback) {
-    // Render and prepare content
+    // Render markdown to HTML first
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
     
-    // Apply syntax highlighting to code blocks
+    // Apply syntax highlighting
     applySyntaxHighlighting(tempDiv);
     
-    // Get all nodes to type
-    const allNodes = [];
-    function collectNodes(node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-            allNodes.push({type: 'text', content: node.textContent, parent: node.parentNode});
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-            allNodes.push({type: 'element', node: node.cloneNode(false), parent: node.parentNode});
-            Array.from(node.childNodes).forEach(collectNodes);
-        }
-    }
-    Array.from(tempDiv.childNodes).forEach(collectNodes);
+    // Get the final rendered HTML
+    const finalHTML = tempDiv.innerHTML;
     
-    // Clear element and start typing
+    // Clear element
     element.innerHTML = '';
-    let currentNodeIndex = 0;
-    let currentCharIndex = 0;
-    let currentElement = element;
-    const elementStack = [element];
-    const speed = 3; // 3ms per character for faster smooth typing
     
-    // Add typing cursor
+    // Add cursor
     const cursor = document.createElement('span');
     cursor.textContent = '|';
     cursor.style.animation = 'blink 1s infinite';
     cursor.style.marginLeft = '2px';
     element.appendChild(cursor);
     
+    // Type character by character
+    let index = 0;
+    const speed = 3; // 3ms per character
+    
     function typeNext() {
-        if (currentNodeIndex >= allNodes.length) {
-            // Remove cursor when done
-            if (cursor.parentNode) {
-                cursor.remove();
-            }
-            if (callback) callback();
-            return;
-        }
-        
-        const node = allNodes[currentNodeIndex];
-        
-        if (node.type === 'element') {
-            // Create new element
-            const newElement = node.node.cloneNode(false);
-            currentElement.insertBefore(newElement, cursor);
-            elementStack.push(newElement);
-            currentElement = newElement;
-            currentNodeIndex++;
-            setTimeout(typeNext, 0);
-        } else if (node.type === 'text') {
-            // Type text character by character
-            if (currentCharIndex < node.content.length) {
-                const char = node.content[currentCharIndex];
-                const textNode = document.createTextNode(char);
-                currentElement.insertBefore(textNode, cursor);
-                currentCharIndex++;
-                
-                // Auto-scroll
-                const messagesDiv = document.getElementById('chatMessages');
+        if (index < finalHTML.length) {
+            // Insert HTML up to current index
+            const currentHTML = finalHTML.substring(0, index + 1);
+            element.innerHTML = currentHTML;
+            
+            // Re-add cursor
+            element.appendChild(cursor);
+            
+            index++;
+            
+            // Auto-scroll
+            const messagesDiv = document.getElementById('chatMessages');
+            if (messagesDiv) {
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                
-                setTimeout(typeNext, speed);
-            } else {
-                // Move to next node
-                currentCharIndex = 0;
-                currentNodeIndex++;
-                // Pop element stack if needed
-                if (currentNodeIndex < allNodes.length && 
-                    allNodes[currentNodeIndex].type === 'element' && 
-                    allNodes[currentNodeIndex].parent !== currentElement) {
-                    elementStack.pop();
-                    currentElement = elementStack[elementStack.length - 1];
-                }
-                setTimeout(typeNext, 0);
             }
+            
+            setTimeout(typeNext, speed);
+        } else {
+            // Done typing - set final content and remove cursor
+            element.innerHTML = finalHTML;
+            if (callback) callback();
         }
     }
     
@@ -1081,17 +1047,61 @@ function removeTypingIndicator() {
     }
 }
 
-function newChat() {
-    const messagesDiv = document.getElementById('chatMessages');
-    messagesDiv.innerHTML = `
-        <div class="welcome-message">
-            <h1>Welcome to {{ t.platform_name }}</h1>
-            <p>{{ t.platform_tagline }}</p>
-            <p style="margin-top: 12px; font-size: 0.9375rem;">Start a conversation by typing your message below.</p>
-        </div>
-    `;
-    isFirstMessage = true;
+async function newChat() {
+    try {
+        // Create new session on backend
+        const response = await fetch('/chat/new_session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            currentSessionId = data.session_id;
+            
+            // Clear UI
+            const messagesDiv = document.getElementById('chatMessages');
+            messagesDiv.innerHTML = `
+                <div class="welcome-message">
+                    <h1>Welcome to {{ t.platform_name }}</h1>
+                    <p>{{ t.platform_tagline }}</p>
+                    <p style="margin-top: 12px; font-size: 0.9375rem;">Start a conversation by typing your message below.</p>
+                </div>
+            `;
+            isFirstMessage = true;
+            
+            // Refresh session list
+            loadSessions();
+        }
+    } catch (error) {
+        console.error('Error creating new chat:', error);
+    }
 }
+
+// Track current session
+let currentSessionId = null;
+
+// Load sessions list
+async function loadSessions() {
+    try {
+        const response = await fetch('/chat/sessions');
+        if (response.ok) {
+            const data = await response.json();
+            // Update UI with sessions list (implement sidebar later)
+            console.log('Sessions loaded:', data.sessions);
+        }
+    } catch (error) {
+        console.error('Error loading sessions:', error);
+    }
+}
+
+// Load session on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadSessions();
+});
 
 // Auto-resize textarea
 const textarea = document.getElementById('messageInput');

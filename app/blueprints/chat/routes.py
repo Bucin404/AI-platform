@@ -204,6 +204,97 @@ def clear_history():
     return jsonify({'message': 'Chat history cleared'})
 
 
+@chat_bp.route('/new_session', methods=['POST'])
+@login_required
+def create_new_session():
+    """Create a new conversation session."""
+    try:
+        # Create new session
+        new_session = ConversationSession(user_id=current_user.id)
+        db.session.add(new_session)
+        db.session.commit()
+        
+        return jsonify({
+            'session_id': new_session.id,
+            'message': 'New session created'
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@chat_bp.route('/sessions')
+@login_required
+def get_sessions():
+    """Get all active conversation sessions for user."""
+    try:
+        # Cleanup old sessions first
+        cleanup_old_sessions(current_user.id)
+        
+        # Get active sessions
+        sessions = ConversationSession.query.filter_by(
+            user_id=current_user.id,
+            is_active=True
+        ).order_by(ConversationSession.updated_at.desc()).all()
+        
+        session_list = []
+        for sess in sessions:
+            # Get message count
+            msg_count = Message.query.filter_by(session_id=sess.id).count()
+            
+            # Get first message as preview
+            first_msg = Message.query.filter_by(
+                session_id=sess.id,
+                role='user'
+            ).order_by(Message.created_at.asc()).first()
+            
+            preview = first_msg.content[:50] + '...' if first_msg and len(first_msg.content) > 50 else (first_msg.content if first_msg else 'New conversation')
+            
+            session_list.append({
+                'id': sess.id,
+                'created_at': sess.created_at.isoformat(),
+                'updated_at': sess.updated_at.isoformat(),
+                'message_count': msg_count,
+                'preview': preview
+            })
+        
+        return jsonify({'sessions': session_list})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@chat_bp.route('/session/<int:session_id>')
+@login_required
+def get_session_messages(session_id):
+    """Get all messages for a specific session."""
+    try:
+        # Verify session belongs to user
+        session = ConversationSession.query.filter_by(
+            id=session_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not session:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        # Get messages
+        messages = Message.query.filter_by(
+            session_id=session_id
+        ).order_by(Message.created_at.asc()).all()
+        
+        return jsonify({
+            'session_id': session_id,
+            'messages': [{
+                'id': msg.id,
+                'role': msg.role,
+                'content': msg.content,
+                'model': msg.model,
+                'created_at': msg.created_at.isoformat()
+            } for msg in messages]
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @chat_bp.route('/models')
 @login_required
 def get_models():
