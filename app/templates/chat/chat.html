@@ -685,6 +685,10 @@ document.body.classList.add('chat-page');
         
         <div class="chat-input-area">
             <div class="input-wrapper">
+                <input type="file" id="fileInput" accept="image/*,video/*,.pdf,.doc,.docx,.txt" style="display: none;" onchange="handleFileSelect(event)">
+                <button id="fileButton" class="file-button" onclick="document.getElementById('fileInput').click()" title="Attach file">
+                    📎
+                </button>
                 <textarea 
                     id="messageInput" 
                     class="chat-input" 
@@ -697,6 +701,7 @@ document.body.classList.add('chat-page');
                     </svg>
                 </button>
             </div>
+            <div id="filePreview" class="file-preview" style="display: none;"></div>
         </div>
     </div>
 </div>
@@ -864,7 +869,7 @@ function typeMessage(element, htmlContent, callback) {
     let currentCharIndex = 0;
     let currentElement = element;
     const elementStack = [element];
-    const speed = 10; // 10ms per character for smooth visible typing
+    const speed = 3; // 3ms per character for faster smooth typing
     
     // Add typing cursor
     const cursor = document.createElement('span');
@@ -1104,3 +1109,102 @@ textarea.addEventListener('keydown', function(e) {
 });
 </script>
 {% endblock %}
+
+<script>
+// File upload functionality
+let selectedFile = null;
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Check file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+        alert('File size must be less than 10MB');
+        return;
+    }
+    
+    selectedFile = file;
+    showFilePreview(file);
+}
+
+function showFilePreview(file) {
+    const preview = document.getElementById('filePreview');
+    const fileType = file.type.startsWith('image/') ? 'image' : 'file';
+    
+    let previewHTML = '<div class="file-preview-item">';
+    
+    if (fileType === 'image') {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewHTML += `<img src="${e.target.result}" alt="Preview">`;
+            previewHTML += `<div class="file-preview-info">
+                <div class="file-preview-name">${file.name}</div>
+                <div class="file-preview-size">${formatFileSize(file.size)}</div>
+            </div>`;
+            previewHTML += '<button class="file-preview-remove" onclick="removeFile()">Remove</button>';
+            previewHTML += '</div>';
+            preview.innerHTML = previewHTML;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewHTML += `<div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">📄</div>`;
+        previewHTML += `<div class="file-preview-info">
+            <div class="file-preview-name">${file.name}</div>
+            <div class="file-preview-size">${formatFileSize(file.size)}</div>
+        </div>`;
+        previewHTML += '<button class="file-preview-remove" onclick="removeFile()">Remove</button>';
+        previewHTML += '</div>';
+        preview.innerHTML = previewHTML;
+        preview.style.display = 'block';
+    }
+}
+
+function removeFile() {
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('filePreview').style.display = 'none';
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    else return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+async function uploadFile() {
+    if (!selectedFile) return null;
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    
+    try {
+        const response = await fetch('/chat/upload', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.upgrade_required) {
+            alert('File uploads require Premium subscription. Please upgrade to continue.');
+            return null;
+        }
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Upload failed');
+        }
+        
+        removeFile();
+        return data;
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('Failed to upload file: ' + error.message);
+        return null;
+    }
+}
+</script>

@@ -1,13 +1,36 @@
 """Chat routes."""
 from flask import render_template, jsonify, request, session
 from flask_login import login_required, current_user
+from werkzeug.utils import secure_filename
+import os
 from app.blueprints.chat import chat_bp
 from app.models.user import Message, ConversationSession
+from app.models.file_attachment import FileAttachment
 from app.services.model_service import get_model_response
 from app.utils.rate_limit import check_rate_limit
 from app.translations import get_all_translations
 from app import db
 from datetime import datetime, timedelta
+
+# File upload configuration
+UPLOAD_FOLDER = 'app/static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4', 'mov', 'avi', 'webm', 'pdf', 'doc', 'docx', 'txt'}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+
+def allowed_file(filename):
+    """Check if file extension is allowed."""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_file_type(filename):
+    """Determine file type from extension."""
+    ext = filename.rsplit('.', 1)[1].lower()
+    if ext in {'png', 'jpg', 'jpeg', 'gif', 'webp'}:
+        return 'image'
+    elif ext in {'mp4', 'mov', 'avi', 'webm'}:
+        return 'video'
+    elif ext in {'pdf', 'doc', 'docx', 'txt'}:
+        return 'document'
+    return 'other'
 
 
 def get_locale():
@@ -80,6 +103,14 @@ def send_message():
     
     if not user_message:
         return jsonify({'error': 'Message cannot be empty'}), 400
+    
+    # Check if model requires premium and user is free
+    premium_models = ['code', 'deepseek', 'document', 'llama', 'image', 'vicuna']
+    if model_name in premium_models and not current_user.can_use_feature(model_name):
+        return jsonify({
+            'error': 'This feature requires Premium subscription',
+            'upgrade_required': True
+        }), 403
     
     # Get or create active conversation session
     conv_session = get_or_create_session(current_user.id)
@@ -180,3 +211,66 @@ def get_models():
     from app.services.model_service import get_available_models
     models = get_available_models()
     return jsonify({'models': models})
+
+
+@chat_bp.route('/upload', methods=['POST'])
+@login_required
+def upload_file():
+    """Upload a file attachment."""
+    # Check if user can upload files
+    if not current_user.can_upload_files():
+        return jsonify({
+            'error': 'File uploads require Premium subscription',
+            'upgrade_required': True
+        }), 403
+    
+    # Check if file is present
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    if not allowed_file(file.filename):
+        return jsonify({'error': 'File type not allowed'}), 400
+    
+    # Check file size
+    file.seek(0, os.SEEK_END)
+    file_size = file.tell()
+    file.seek(0)
+    
+    if file_size > MAX_FILE_SIZE:
+        return jsonify({'error': 'File size exceeds 10MB limit'}), 400
+    
+    # Save file securely
+    filename = secure_filename(file.filename)
+    unique_filename = f"{current_user.id}_{datetime.utcnow().timestamp()}_{filename}"
+    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+    
+    # Ensure upload directory exists
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    
+    file.save(file_path)
+    
+    # Create file attachment record
+    attachment = FileAttachment(
+        filename=unique_filename,
+        original_filename=filename,
+        file_path=file_path,
+        file_type=get_file_type(filename),
+        file_size=file_size,
+        mime_type=file.content_type,
+        user_id=current_user.id
+    )
+    db.session.add(attachment)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'file_id': attachment.id,
+        'filename': filename,
+        'file_type': attachment.file_type,
+        'file_url': attachment.get_file_url()
+    })

@@ -27,6 +27,19 @@ class User(UserMixin, db.Model):
     sessions = db.relationship('ConversationSession', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     transactions = db.relationship('Transaction', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
+    def can_use_feature(self, feature):
+        """Check if user can use a specific feature based on tier."""
+        free_features = ['chat', 'general', 'qa', 'basic']
+        
+        if self.is_premium() or self.is_admin():
+            return True
+        
+        return feature in free_features
+    
+    def can_upload_files(self):
+        """Check if user can upload files."""
+        return self.is_premium() or self.is_admin()
+    
     def set_password(self, password):
         """Set password hash."""
         self.password_hash = generate_password_hash(password)
