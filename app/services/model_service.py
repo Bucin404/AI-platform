@@ -417,7 +417,10 @@ class CodeLlamaAdapter(ModelAdapter):
                 else:
                     return self._mock_response(prompt)
         else:
-            return self._mock_response(prompt)
+            if stream:
+                yield self._mock_response(prompt)
+            else:
+                return self._mock_response(prompt)
     
     def _mock_response(self, prompt):
         """Fallback mock response."""
@@ -458,8 +461,8 @@ class Llama3Adapter(ModelAdapter):
     def is_loaded(self):
         return self._is_loaded
     
-    def generate(self, prompt, user=None):
-        """Generate response using Llama-3 - META'S BEST."""
+    def generate(self, prompt, user=None, stream=False):
+        """Generate response using Llama-3 - META'S BEST with optional streaming."""
         if self._is_loaded and self.model:
             try:
                 response = self.model(
@@ -471,14 +474,28 @@ class Llama3Adapter(ModelAdapter):
                     repeat_penalty=1.1,
                     stop=["<|eot_id|>", "<|start_header_id|>", "User:"],
                     echo=False,
-                    stream=False
+                    stream=stream  # Enable streaming if requested
                 )
-                return response['choices'][0]['text'].strip()
+                
+                if stream:
+                    # Return generator for streaming
+                    for chunk in response:
+                        token = chunk['choices'][0]['text']
+                        if token:
+                            yield token
+                else:
+                    return response['choices'][0]['text'].strip()
             except Exception as e:
                 print(f"Error generating response: {e}")
-                return self._mock_response(prompt)
+                if stream:
+                    yield self._mock_response(prompt)
+                else:
+                    return self._mock_response(prompt)
         else:
-            return self._mock_response(prompt)
+            if stream:
+                yield self._mock_response(prompt)
+            else:
+                return self._mock_response(prompt)
     
     def _mock_response(self, prompt):
         """Fallback mock response."""
@@ -519,8 +536,8 @@ class HermesAdapter(ModelAdapter):
     def is_loaded(self):
         return self._is_loaded
     
-    def generate(self, prompt, user=None):
-        """Generate response using OpenHermes - CREATIVE & ENGAGING."""
+    def generate(self, prompt, user=None, stream=False):
+        """Generate response using OpenHermes - CREATIVE & ENGAGING with optional streaming."""
         if self._is_loaded and self.model:
             try:
                 response = self.model(
@@ -532,14 +549,28 @@ class HermesAdapter(ModelAdapter):
                     repeat_penalty=1.1,
                     stop=["<|im_end|>", "User:", "\n\nUser:"],
                     echo=False,
-                    stream=False
+                    stream=stream  # Enable streaming if requested
                 )
-                return response['choices'][0]['text'].strip()
+                
+                if stream:
+                    # Return generator for streaming
+                    for chunk in response:
+                        token = chunk['choices'][0]['text']
+                        if token:
+                            yield token
+                else:
+                    return response['choices'][0]['text'].strip()
             except Exception as e:
                 print(f"Error generating response: {e}")
-                return self._mock_response(prompt)
+                if stream:
+                    yield self._mock_response(prompt)
+                else:
+                    return self._mock_response(prompt)
         else:
-            return self._mock_response(prompt)
+            if stream:
+                yield self._mock_response(prompt)
+            else:
+                return self._mock_response(prompt)
     
     def _mock_response(self, prompt):
         """Fallback mock response."""
