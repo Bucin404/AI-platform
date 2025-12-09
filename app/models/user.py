@@ -118,16 +118,21 @@ class ConversationSession(db.Model):
         selected_messages = []
         estimated_tokens = 0
         
-        # Start from most recent and work backwards
+        # Start from most recent and work backwards, collecting in reverse order
         for msg in reversed(messages):
             msg_tokens = len(msg.content) // 4  # Rough estimate
             if estimated_tokens + msg_tokens > max_tokens:
                 break
-            selected_messages.insert(0, msg)  # Insert at start to maintain order
+            selected_messages.append(msg)  # Append (more efficient)
             estimated_tokens += msg_tokens
         
-        # Always include at least the last message if we have any
+        # Reverse once at the end to get chronological order
+        selected_messages.reverse()
+        
+        # Always include at least the last pair (user + assistant) if available
         if not selected_messages and messages:
+            # Take just the most recent message even if it might be large
+            # This ensures context is never completely empty
             selected_messages = [messages[-1]]
         
         return selected_messages
