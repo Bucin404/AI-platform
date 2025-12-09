@@ -351,6 +351,10 @@ class MistralAdapter(ModelAdapter):
                         
                         try:
                             for chunk in response:
+                                # DEBUG: Show what we're actually receiving
+                                print(f"  🔍 Chunk type: {type(chunk)}")
+                                print(f"  🔍 Chunk content: {repr(chunk)[:200]}")
+                                
                                 # Handle llama-cpp-python streaming format
                                 # Streaming may return tokens directly or in dict format
                                 if isinstance(chunk, str):
@@ -360,6 +364,7 @@ class MistralAdapter(ModelAdapter):
                                 else:
                                     token = str(chunk)
                                 
+                                print(f"  🔍 Extracted token: {repr(token)[:100]}")
                                 token_count += 1
                                 
                                 if token:
