@@ -223,8 +223,6 @@ def stream_message():
             full_response = []
             token_count = 0
             
-            print(f"🚀 Starting streaming response for model: {model_name}", flush=True)
-            
             # Get streaming response from AI
             generator = get_model_response(
                 user_message,
@@ -234,20 +232,14 @@ def stream_message():
                 stream=True
             )
             
-            print(f"📡 Got generator: {type(generator)}", flush=True)
-            
             for token in generator:
                 token_count += 1
-                print(f"🔤 Token {token_count}: {repr(token[:50])}", flush=True)
                 full_response.append(token)
                 # Send token as SSE event
                 yield f"data: {json.dumps({'token': token})}\n\n"
             
-            print(f"✅ Streaming complete. Total tokens: {token_count}")
-            
             # Save complete response to database
             complete_response = ''.join(full_response)
-            print(f"💾 Saving response ({len(complete_response)} chars)")
             
             response_msg = Message(
                 user_id=current_user.id,
@@ -261,7 +253,6 @@ def stream_message():
             db.session.commit()
             
             # Send completion event
-            print(f"🏁 Sending done signal")
             yield f"data: {json.dumps({'done': True, 'message_id': response_msg.id, 'session_id': conv_session.id})}\n\n"
             
         except Exception as e:

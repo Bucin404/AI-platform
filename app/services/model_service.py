@@ -316,11 +316,7 @@ class MistralAdapter(ModelAdapter):
         """Generate response using Mistral - HIGHEST QUALITY with optional streaming."""
         if self._is_loaded and self.model:
             try:
-                # SIMPLIFIED: Use direct prompt first, test if [INST] format is the issue
                 formatted_prompt = prompt.strip()
-                
-                print(f"🎯 Mistral RAW prompt: {repr(prompt[:200])}")
-                print(f"🎯 Mistral formatted prompt: {repr(formatted_prompt[:200])}")
                 
                 response = self.model(
                     formatted_prompt,
@@ -337,13 +333,6 @@ class MistralAdapter(ModelAdapter):
                 if stream:
                     # Return generator for streaming
                     def streaming_generator():
-                        print(f"🔄 Mistral streaming started...", flush=True)
-                        print(f"📁 Model file: {self.model_path}", flush=True)
-                        
-                        # IMMEDIATE TEST: Yield test token to verify streaming works
-                        print(f"🧪 Sending test token...", flush=True)
-                        yield "Testing... "
-                        
                         token_count = 0
                         empty_count = 0
                         max_empty = 10  # After 10 empty iterations, use fallback
@@ -351,10 +340,6 @@ class MistralAdapter(ModelAdapter):
                         
                         try:
                             for chunk in response:
-                                # DEBUG: Show what we're actually receiving
-                                print(f"  🔍 Chunk type: {type(chunk)}", flush=True)
-                                print(f"  🔍 Chunk content: {repr(chunk)[:200]}", flush=True)
-                                
                                 # Handle llama-cpp-python streaming format
                                 # Streaming may return tokens directly or in dict format
                                 if isinstance(chunk, str):
@@ -370,43 +355,32 @@ class MistralAdapter(ModelAdapter):
                                 # FIXED: Don't filter empty/whitespace tokens - yield them all (except None)
                                 # This ensures SSE counter increments even with empty chunks
                                 if token is not None:
-                                    print(f"  📦 Token {token_count}: {repr(token[:50]) if token else '(empty)'}")
+                                    token_count += 1
                                     if token:  # Only track non-empty as "real" tokens
                                         empty_count = 0
                                         yielded_any = True
                                     else:
                                         empty_count += 1
-                                        print(f"  ⚠️  Empty chunk {empty_count}/{max_empty}")
                                     
                                     # Yield the token (even if empty/whitespace)
                                     yield token
                                     
                                     # If too many consecutive empty chunks, switch to fallback
                                     if empty_count >= max_empty:
-                                        print(f"  ⚠️  Too many empty chunks! Using fallback response...")
                                         fallback = self._mock_response(prompt)
-                                        words = fallback.split()
-                                        print(f"  📝 Starting fallback: {len(words)} words")
-                                        for i, word in enumerate(words, 1):
-                                            print(f"  📝 Fallback word {i}: {word}")
+                                        for word in fallback.split():
                                             yield word + " "
-                                        print(f"  ✅ Fallback complete: {len(words)} words")
                                         return
                         except StopIteration:
                             pass
                         
-                        # Check if we yielded anything at all (besides test token)
+                        # Check if we yielded anything at all
                         if not yielded_any:
-                            print(f"  ⚠️  Generator completed with 0 tokens! Using fallback...")
                             fallback = self._mock_response(prompt)
-                            words = fallback.split()
-                            print(f"  📝 Starting fallback: {len(words)} words")
-                            for i, word in enumerate(words, 1):
-                                print(f"  📝 Fallback word {i}: {word}")
+                            for word in fallback.split():
                                 yield word + " "
                             print(f"  ✅ Fallback complete: {len(words)} words")
-                        else:
-                            print(f"  ✅ Mistral streaming done: {token_count} real tokens")
+                            print(f"✅ Mistral streaming done: {token_count} tokens")
                     
                     return streaming_generator()
                 else:
@@ -422,7 +396,6 @@ class MistralAdapter(ModelAdapter):
                 else:
                     return self._mock_response(prompt)
         else:
-            print(f"⚠️  Mistral model not loaded, using fallback")
             if stream:
                 def fallback_generator():
                     yield self._mock_response(prompt)
@@ -488,7 +461,6 @@ class CodeLlamaAdapter(ModelAdapter):
                 if stream:
                     # Return generator for streaming with fallback protection
                     def streaming_generator():
-                        print(f"🔄 CodeLlama streaming started...")
                         yielded_any = False
                         token_count = 0
                         
@@ -505,7 +477,6 @@ class CodeLlamaAdapter(ModelAdapter):
                                 # FIXED: Yield all tokens including empty/whitespace (only filter None)
                                 if token is not None:
                                     token_count += 1
-                                    print(f"  📦 CodeLlama token {token_count}: {repr(token[:50]) if token else '(empty)'}")
                                     if token:  # Track non-empty tokens
                                         yielded_any = True
                                     yield token
@@ -514,13 +485,9 @@ class CodeLlamaAdapter(ModelAdapter):
                         
                         # Fallback if no real tokens yielded
                         if not yielded_any:
-                            print(f"  ⚠️  CodeLlama: 0 real tokens! Using fallback...")
                             fallback = self._mock_response(prompt)
                             for word in fallback.split():
                                 yield word + " "
-                            print(f"  ✅ CodeLlama fallback complete")
-                        else:
-                            print(f"  ✅ CodeLlama streaming done: {token_count} tokens")
                     
                     return streaming_generator()
                 else:
@@ -599,7 +566,6 @@ class Llama3Adapter(ModelAdapter):
                 if stream:
                     # Return generator for streaming with fallback protection
                     def streaming_generator():
-                        print(f"🔄 Llama3 streaming started...")
                         yielded_any = False
                         token_count = 0
                         
@@ -616,7 +582,6 @@ class Llama3Adapter(ModelAdapter):
                                 # FIXED: Yield all tokens including empty/whitespace (only filter None)
                                 if token is not None:
                                     token_count += 1
-                                    print(f"  📦 Llama3 token {token_count}: {repr(token[:50]) if token else '(empty)'}")
                                     if token:  # Track non-empty tokens
                                         yielded_any = True
                                     yield token
@@ -625,13 +590,9 @@ class Llama3Adapter(ModelAdapter):
                         
                         # Fallback if no real tokens yielded
                         if not yielded_any:
-                            print(f"  ⚠️  Llama3: 0 real tokens! Using fallback...")
                             fallback = self._mock_response(prompt)
                             for word in fallback.split():
                                 yield word + " "
-                            print(f"  ✅ Llama3 fallback complete")
-                        else:
-                            print(f"  ✅ Llama3 streaming done: {token_count} tokens")
                     
                     return streaming_generator()
                 else:
@@ -710,7 +671,6 @@ class HermesAdapter(ModelAdapter):
                 if stream:
                     # Return generator for streaming with fallback protection
                     def streaming_generator():
-                        print(f"🔄 Hermes streaming started...")
                         yielded_any = False
                         token_count = 0
                         
@@ -727,7 +687,6 @@ class HermesAdapter(ModelAdapter):
                                 # FIXED: Yield all tokens including empty/whitespace (only filter None)
                                 if token is not None:
                                     token_count += 1
-                                    print(f"  📦 Hermes token {token_count}: {repr(token[:50]) if token else '(empty)'}")
                                     if token:  # Track non-empty tokens
                                         yielded_any = True
                                     yield token
@@ -736,13 +695,9 @@ class HermesAdapter(ModelAdapter):
                         
                         # Fallback if no real tokens yielded
                         if not yielded_any:
-                            print(f"  ⚠️  Hermes: 0 real tokens! Using fallback...")
                             fallback = self._mock_response(prompt)
                             for word in fallback.split():
                                 yield word + " "
-                            print(f"  ✅ Hermes fallback complete")
-                        else:
-                            print(f"  ✅ Hermes streaming done: {token_count} tokens")
                     
                     return streaming_generator()
                 else:
@@ -1365,10 +1320,6 @@ def get_model_response(prompt, model_name='auto', user=None, history=None, strea
     """
     from flask import current_app
     
-    print(f"\n=== MODEL SERVICE DEBUG ===", flush=True)
-    print(f"User prompt: {prompt}", flush=True)
-    print(f"Requested model: {model_name}", flush=True)
-    
     # Build context from history if provided - FULL CONVERSATION HISTORY
     if history:
         # Include ALL messages (both user and assistant) for full context
@@ -1406,50 +1357,31 @@ def get_model_response(prompt, model_name='auto', user=None, history=None, strea
         # User's prompt goes DIRECTLY to AI model
         full_prompt = f"User: {prompt}\nAssistant:"
     
-    print(f"Full prompt to AI: {full_prompt[:200]}...")
-    
     # Auto-select model based on content if requested
     if model_name == 'auto':
         model_name = select_model_for_content(prompt)
-        print(f"Auto-selected model: {model_name}", flush=True)
     
     # Validate model exists
     if model_name not in MODELS:
-        print(f"WARNING: Model '{model_name}' not found in MODELS: {list(MODELS.keys())}", flush=True)
-        print(f"Available models: {list(MODELS.keys())}", flush=True)
         # Default to gpt4all
         model_name = 'gpt4all'
-        print(f"Falling back to: {model_name}", flush=True)
-    
-    print(f"Final selected model: {model_name}", flush=True)
     
     try:
         model = MODELS[model_name]
-        print(f"Model loaded status: {model.is_loaded()}", flush=True)
-        
-        if not model.is_loaded():
-            print(f"WARNING: Model {model_name} is not loaded, will use fallback response", flush=True)
         
         # Generate response from model - USER INPUT GOES DIRECTLY HERE
         if stream:
             # Return generator for streaming
-            print(f"Streaming mode enabled", flush=True)
-            print(f"=== END DEBUG ===\n", flush=True)
             return model.generate(full_prompt, user, stream=True)
         else:
             # Return complete response
             response = model.generate(full_prompt, user, stream=False)
-            print(f"AI response generated: {len(response)} characters", flush=True)
-            print(f"Response preview: {response[:200]}...", flush=True)
-            print(f"=== END DEBUG ===\n", flush=True)
             return response
         
     except Exception as e:
         print(f"ERROR in get_model_response: {str(e)}", flush=True)
-        print(f"Error type: {type(e).__name__}", flush=True)
         import traceback
-        print(f"Traceback: {traceback.format_exc()}", flush=True)
-        print(f"=== END DEBUG (ERROR) ===\n", flush=True)
+        traceback.print_exc()
         
         # Return user-friendly error message
         if stream:
