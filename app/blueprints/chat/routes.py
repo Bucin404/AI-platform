@@ -36,9 +36,14 @@ def send_message():
     if not rate_limit_ok:
         return jsonify({'error': message}), 429
     
-    data = request.get_json()
+    # Handle both JSON and form data
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form.to_dict()
+    
     user_message = data.get('message', '').strip()
-    model_name = data.get('model', 'gpt4all')
+    model_name = data.get('model', 'auto')
     
     if not user_message:
         return jsonify({'error': 'Message cannot be empty'}), 400
