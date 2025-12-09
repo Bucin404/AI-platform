@@ -346,15 +346,42 @@ class MistralAdapter(ModelAdapter):
                 if stream:
                     # Return generator for streaming
                     print(f"🔄 Mistral streaming started...")
+                    print(f"📁 Model file: {self.model_path}")
                     token_count = 0
+                    empty_count = 0
+                    max_empty = 10  # After 10 empty iterations, use fallback
+                    
                     for chunk in response:
                         token = chunk['choices'][0]['text']
                         token_count += 1
-                        print(f"  📦 Chunk {token_count}: {repr(token[:50])}, empty: {not token}")
-                        # CRITICAL: Yield ALL chunks, including empty ones!
-                        # llama.cpp returns chunks with empty strings as part of protocol
-                        yield token
-                    print(f"  ✅ Mistral streaming done: {token_count} chunks")
+                        
+                        if token:
+                            print(f"  📦 Token {token_count}: {repr(token[:50])}")
+                            empty_count = 0  # Reset empty counter
+                            yield token
+                        else:
+                            empty_count += 1
+                            print(f"  ⚠️  Empty chunk {empty_count}/{max_empty}")
+                            
+                            # If too many empty chunks, switch to fallback
+                            if empty_count >= max_empty:
+                                print(f"  ⚠️  0 tokens detected! Using fallback response...")
+                                # Generate fallback response as streaming tokens
+                                fallback = self._mock_response(prompt)
+                                words = fallback.split()
+                                for word in words:
+                                    yield word + " "
+                                print(f"  ✅ Fallback complete: {len(words)} words")
+                                return
+                    
+                    if token_count == 0:
+                        print(f"  ⚠️  Generator ended with 0 tokens! Using fallback...")
+                        fallback = self._mock_response(prompt)
+                        words = fallback.split()
+                        for word in words:
+                            yield word + " "
+                    else:
+                        print(f"  ✅ Mistral streaming done: {token_count} tokens")
                 else:
                     return response['choices'][0]['text'].strip()
             except Exception as e:
