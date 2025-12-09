@@ -763,38 +763,39 @@ body.chat-page footer {
     font-weight: 500;
 }
 
-/* Code Blocks - ChatGPT Style */
+/* Code Blocks - Clean and readable */
 .code-block-wrapper {
-    margin: 1em 0;
+    margin: 1.2em 0;
     border-radius: 8px;
     overflow: hidden;
     background: #1e1e1e;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    border: 1px solid #2d2d2d;
 }
 
 .code-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 16px;
+    padding: 10px 16px;
     background: #2d2d2d;
     border-bottom: 1px solid #3e3e3e;
 }
 
 .code-language {
-    font-size: 0.75rem;
-    color: #9fa6bc;
+    font-size: 0.8rem;
+    color: #a0a0a0;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
 }
 
 .copy-btn {
-    background: rgba(255, 255, 255, 0.1);
-    color: #9fa6bc;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 4px 12px;
-    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #a0a0a0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 5px 14px;
+    border-radius: 5px;
     font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.2s;
@@ -804,23 +805,26 @@ body.chat-page footer {
 .copy-btn:hover {
     background: rgba(255, 255, 255, 0.15);
     color: white;
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.25);
 }
 
 .code-block {
     margin: 0;
-    padding: 16px;
+    padding: 18px;
     background: #1e1e1e;
     color: #d4d4d4;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.875rem;
-    line-height: 1.6;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.7;
     overflow-x: auto;
     white-space: pre;
+    max-height: 600px;
+    overflow-y: auto;
 }
 
 .code-block::-webkit-scrollbar {
     height: 8px;
+    width: 8px;
 }
 
 .code-block::-webkit-scrollbar-track {
@@ -860,7 +864,7 @@ body.chat-page footer {
     color: #764ba2;
 }
 
-/* Avatar Icons - Better Icons */
+/* Avatar Icons - Simple initials without emojis */
 .message-avatar {
     width: 40px;
     height: 40px;
@@ -871,22 +875,19 @@ body.chat-page footer {
     font-weight: 700;
     font-size: 1.125rem;
     flex-shrink: 0;
-    position: relative;
 }
 
-.message-wrapper.user .message-avatar::before {
-    content: "👤";
-    font-size: 1.2rem;
+.message-wrapper.user .message-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin-left: 12px;
+    order: 2;
 }
 
-.message-wrapper.assistant .message-avatar::before {
-    content: "🤖";
-    font-size: 1.2rem;
-}
-
-.message-wrapper.user .message-avatar,
 .message-wrapper.assistant .message-avatar {
-    text-indent: -9999px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    margin-right: 12px;
 }
 
 /* Tables */
