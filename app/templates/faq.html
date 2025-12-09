@@ -4,25 +4,155 @@
 
 {% block content %}
 <div class="faq-page">
-    <div class="hero-section">
-        <h1 class="fade-in">{{ t.faq_title }}</h1>
+    <div class="hero-section fade-in">
+        <h1>{{ t.faq_title }}</h1>
+        <p style="font-size: 1.25rem; color: var(--gray-600); margin-top: 1rem;">
+            {% if lang == 'en' %}
+            Find answers to common questions about AI Smooht
+            {% else %}
+            Temukan jawaban untuk pertanyaan umum tentang AI Smooht
+            {% endif %}
+        </p>
     </div>
     
-    <div class="faq-container">
-        <div class="faq-card">
-            <h3>What is {{ t.platform_name }}?</h3>
-            <p>{{ t.platform_name }} is an intelligent AI chat platform that routes your queries to specialized AI models.</p>
+    <div class="faq-list">
+        <!-- FAQ 1 -->
+        <div class="faq-item" onclick="this.classList.toggle('active')">
+            <div class="faq-question">
+                {% if lang == 'en' %}
+                What is AI Smooht?
+                {% else %}
+                Apa itu AI Smooht?
+                {% endif %}
+            </div>
+            <div class="faq-answer">
+                <p>
+                    {% if lang == 'en' %}
+                    AI Smooht is an intelligent conversational AI platform that provides seamless, natural interactions. 
+                    It automatically adapts to your needs, whether you're coding, analyzing documents, or having general conversations.
+                    {% else %}
+                    AI Smooht adalah platform AI percakapan cerdas yang menyediakan interaksi natural yang mulus. 
+                    Platform ini secara otomatis beradaptasi dengan kebutuhan Anda, baik saat coding, menganalisis dokumen, atau percakapan umum.
+                    {% endif %}
+                </p>
+            </div>
         </div>
         
-        <div class="faq-card">
-            <h3>How does intelligent routing work?</h3>
-            <p>Our system analyzes your query and automatically selects the best AI model for your specific task.</p>
+        <!-- FAQ 2 -->
+        <div class="faq-item" onclick="this.classList.toggle('active')">
+            <div class="faq-question">
+                {% if lang == 'en' %}
+                How does intelligent routing work?
+                {% else %}
+                Bagaimana cara kerja routing cerdas?
+                {% endif %}
+            </div>
+            <div class="faq-answer">
+                <p>
+                    {% if lang == 'en' %}
+                    Our intelligent routing system automatically analyzes your query and selects the optimal AI approach 
+                    to provide the best possible response. This ensures you always get accurate, relevant answers.
+                    {% else %}
+                    Sistem routing cerdas kami secara otomatis menganalisis pertanyaan Anda dan memilih pendekatan AI optimal 
+                    untuk memberikan respons terbaik. Ini memastikan Anda selalu mendapat jawaban yang akurat dan relevan.
+                    {% endif %}
+                </p>
+            </div>
         </div>
         
-        <div class="faq-card">
-            <h3>What models are available?</h3>
-            <p>We offer DeepSeek Coder for coding, Llama for documents, Vicuna for media, and GPT4All for general chat.</p>
+        <!-- FAQ 3 -->
+        <div class="faq-item" onclick="this.classList.toggle('active')">
+            <div class="faq-question">
+                {% if lang == 'en' %}
+                Is my data secure?
+                {% else %}
+                Apakah data saya aman?
+                {% endif %}
+            </div>
+            <div class="faq-answer">
+                <p>
+                    {% if lang == 'en' %}
+                    Absolutely! We use enterprise-grade security measures to protect your data. All conversations are 
+                    encrypted, and we never share your information with third parties. Your privacy is our top priority.
+                    {% else %}
+                    Tentu saja! Kami menggunakan langkah keamanan tingkat enterprise untuk melindungi data Anda. Semua percakapan 
+                    dienkripsi, dan kami tidak pernah membagikan informasi Anda dengan pihak ketiga. Privasi Anda adalah prioritas utama kami.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <!-- FAQ 4 -->
+        <div class="faq-item" onclick="this.classList.toggle('active')">
+            <div class="faq-question">
+                {% if lang == 'en' %}
+                What languages are supported?
+                {% else %}
+                Bahasa apa saja yang didukung?
+                {% endif %}
+            </div>
+            <div class="faq-answer">
+                <p>
+                    {% if lang == 'en' %}
+                    AI Smooht currently supports Indonesian and English with full natural language understanding. 
+                    The platform automatically detects your preferred language and provides seamless multilingual conversations.
+                    {% else %}
+                    AI Smooht saat ini mendukung Bahasa Indonesia dan Inggris dengan pemahaman bahasa natural penuh. 
+                    Platform ini secara otomatis mendeteksi bahasa pilihan Anda dan menyediakan percakapan multibahasa yang mulus.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <!-- FAQ 5 -->
+        <div class="faq-item" onclick="this.classList.toggle('active')">
+            <div class="faq-question">
+                {% if lang == 'en' %}
+                How much does it cost?
+                {% else %}
+                Berapa biayanya?
+                {% endif %}
+            </div>
+            <div class="faq-answer">
+                <p>
+                    {% if lang == 'en' %}
+                    We offer a free tier with 10 requests per hour, perfect for trying out the platform. 
+                    Premium plans start at $9.99/month with 100 requests per hour and additional features. 
+                    Check our pricing page for more details.
+                    {% else %}
+                    Kami menawarkan tier gratis dengan 10 permintaan per jam, sempurna untuk mencoba platform. 
+                    Paket premium mulai dari $9.99/bulan dengan 100 permintaan per jam dan fitur tambahan. 
+                    Lihat halaman harga untuk detail lebih lanjut.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <!-- FAQ 6 -->
+        <div class="faq-item" onclick="this.classList.toggle('active')">
+            <div class="faq-question">
+                {% if lang == 'en' %}
+                Can I use AI Smooht for my business?
+                {% else %}
+                Bisakah saya menggunakan AI Smooht untuk bisnis saya?
+                {% endif %}
+            </div>
+            <div class="faq-answer">
+                <p>
+                    {% if lang == 'en' %}
+                    Yes! AI Smooht is built to be enterprise-ready and scalable. Our Premium and Annual plans are perfect 
+                    for businesses of any size. We also offer API access for seamless integration with your existing systems.
+                    {% else %}
+                    Ya! AI Smooht dibangun untuk siap enterprise dan scalable. Paket Premium dan Annual kami sempurna 
+                    untuk bisnis dalam segala ukuran. Kami juga menawarkan akses API untuk integrasi mulus dengan sistem Anda yang ada.
+                    {% endif %}
+                </p>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+// FAQ accordion functionality is already handled by onclick in the HTML
+</script>
 {% endblock %}
