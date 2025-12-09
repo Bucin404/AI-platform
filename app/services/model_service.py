@@ -819,25 +819,21 @@ Need more information?"""
 
 
 def get_model_response(prompt, model_name='auto', user=None, history=None):
-    """Get response from specified model with language detection and unique variations.
+    """Get response from specified model - sends user input directly to AI.
     
     Args:
-        prompt: User prompt/message
+        prompt: User prompt/message - SENT DIRECTLY TO AI MODEL
         model_name: Model to use ('auto' for automatic selection)
         user: User object
         history: Conversation history (list of dicts with 'role' and 'content')
     
     Returns:
-        str: AI response in detected language with unique variation
+        str: AI response directly from model
     """
     from flask import current_app
     
-    # Detect user's language
-    user_language = detect_language(prompt)
-    
-    # Generate unique ID for this specific prompt
-    prompt_hash = generate_unique_response_id(prompt)
-    variation_index = prompt_hash % 5  # 5 different variations
+    print(f"\n=== MODEL SERVICE DEBUG ===")
+    print(f"User prompt: {prompt}")
     
     # Build context from history if provided
     if history:
@@ -850,10 +846,13 @@ def get_model_response(prompt, model_name='auto', user=None, history=None):
             else:
                 context_messages.append(f"Assistant: {content}")
         
-        # Combine context with current prompt
+        # Combine context with current prompt - THIS GOES DIRECTLY TO AI
         full_prompt = "\n".join(context_messages) + f"\nUser: {prompt}\nAssistant:"
     else:
-        full_prompt = prompt
+        # User's prompt goes DIRECTLY to AI model
+        full_prompt = f"User: {prompt}\nAssistant:"
+    
+    print(f"Full prompt to AI: {full_prompt[:200]}...")
     
     # Auto-select model based on content if requested
     if model_name == 'auto':
@@ -866,14 +865,16 @@ def get_model_response(prompt, model_name='auto', user=None, history=None):
         except RuntimeError:
             model_name = 'gpt4all'
     
-    model = MODELS[model_name]
+    print(f"Selected model: {model_name}")
     
-    # Generate response from model
+    model = MODELS[model_name]
+    print(f"Model loaded: {model.is_loaded()}")
+    
+    # Generate response from model - USER INPUT GOES DIRECTLY HERE
     response = model.generate(full_prompt, user)
     
-    # If model is not loaded, generate language-appropriate unique response
-    if not model.is_loaded():
-        response = generate_fallback_response(prompt, user_language, variation_index)
+    print(f"AI response: {response[:200]}...")
+    print(f"=== END DEBUG ===\n")
     
     return response
 
