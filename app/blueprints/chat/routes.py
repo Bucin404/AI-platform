@@ -1,18 +1,30 @@
 """Chat routes."""
-from flask import render_template, jsonify, request
+from flask import render_template, jsonify, request, session
 from flask_login import login_required, current_user
 from app.blueprints.chat import chat_bp
 from app.models.user import Message
 from app.services.model_service import get_model_response
 from app.utils.rate_limit import check_rate_limit
+from app.translations import get_all_translations
 from app import db
+
+
+def get_locale():
+    """Get user's preferred language from session or browser"""
+    if 'lang' in session:
+        return session['lang']
+    browser_lang = request.accept_languages.best_match(['en', 'id'])
+    session['lang'] = browser_lang or 'id'
+    return session['lang']
 
 
 @chat_bp.route('/')
 @login_required
 def index():
     """Chat interface."""
-    return render_template('chat.html')
+    lang = get_locale()
+    translations = get_all_translations(lang)
+    return render_template('chat/chat.html', t=translations, lang=lang)
 
 
 @chat_bp.route('/send', methods=['POST'])

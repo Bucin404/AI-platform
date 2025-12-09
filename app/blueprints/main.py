@@ -1,5 +1,5 @@
 """Main blueprint."""
-from flask import Blueprint, render_template, jsonify, session, request
+from flask import Blueprint, render_template, jsonify, session, request, redirect, url_for
 from flask_login import current_user
 from app.translations import get_all_translations
 

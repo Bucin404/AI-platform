@@ -37,7 +37,7 @@
                 <li>{{ 'Priority support' if lang == 'en' else 'Dukungan prioritas' }}</li>
                 <li>{{ 'Advanced features' if lang == 'en' else 'Fitur lanjutan' }}</li>
             </ul>
-            <a href="{{ url_for('payments.checkout') }}" class="btn btn-primary">{{ t.pricing_upgrade }}</a>
+            <a href="{{ url_for('payments.index') }}" class="btn btn-primary">{{ t.pricing_upgrade }}</a>
         </div>
         
         <!-- Annual Plan -->
@@ -54,7 +54,7 @@
                 <li>{{ 'Advanced features' if lang == 'en' else 'Fitur lanjutan' }}</li>
                 <li>{{ 'API access' if lang == 'en' else 'Akses API' }}</li>
             </ul>
-            <a href="{{ url_for('payments.checkout') }}" class="btn btn-primary">{{ t.pricing_upgrade }}</a>
+            <a href="{{ url_for('payments.index') }}" class="btn btn-primary">{{ t.pricing_upgrade }}</a>
         </div>
     </div>
 </div>
