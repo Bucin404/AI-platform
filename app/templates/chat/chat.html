@@ -667,10 +667,16 @@ body:not(.sidebar-collapsed) .sidebar-toggle svg {
 
 /* Code Blocks */
 .code-block-wrapper {
-    margin: 12px 0;
+    margin: 16px 0;
     border-radius: 8px;
     overflow: hidden;
     background: #1e1e1e;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    clear: both;
+    display: block;
+    isolation: isolate;
 }
 
 .code-header {
@@ -716,11 +722,15 @@ body:not(.sidebar-collapsed) .sidebar-toggle svg {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    white-space: pre;
+    display: block;
 }
 
 .code-block code {
     font-family: inherit;
     color: inherit;
+    display: block;
+    white-space: pre;
 }
 
 .code-block::-webkit-scrollbar {
@@ -738,6 +748,16 @@ body:not(.sidebar-collapsed) .sidebar-toggle svg {
 
 .code-block::-webkit-scrollbar-thumb:hover {
     background: #505050;
+}
+
+/* Ensure text before/after code blocks has proper spacing */
+.message-content > p {
+    margin: 8px 0;
+}
+
+.message-content > p + .code-block-wrapper,
+.code-block-wrapper + p {
+    margin-top: 16px;
 }
 
 
@@ -1608,49 +1628,118 @@ function typeMessage(element, htmlContent, callback) {
     // Get the final rendered HTML
     const finalHTML = tempDiv.innerHTML;
     
+    // Parse HTML to identify code blocks and other elements
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(finalHTML, 'text/html');
+    const children = Array.from(doc.body.childNodes);
+    
     // Clear element
     element.innerHTML = '';
     
-    // Add cursor
-    const cursor = document.createElement('span');
-    cursor.textContent = '|';
-    cursor.style.animation = 'blink 1s infinite';
-    cursor.style.marginLeft = '2px';
-    element.appendChild(cursor);
+    let currentIndex = 0;
     
-    // Type character by character
-    let index = 0;
-    const speed = 1; // 1ms per character - MAXIMUM SPEED
-    
-    function typeNext() {
-        if (index < finalHTML.length) {
-            // Insert HTML up to current index
-            const currentHTML = finalHTML.substring(0, index + 1);
-            element.innerHTML = currentHTML;
-            
-            // Re-add cursor
-            element.appendChild(cursor);
-            
-            index++;
-            
-            // Only auto-scroll if user is at bottom (allow free scrolling)
-            const messagesDiv = document.getElementById('chatMessages');
-            if (messagesDiv) {
-                const isAtBottom = messagesDiv.scrollHeight - messagesDiv.scrollTop - messagesDiv.clientHeight < 50;
-                if (isAtBottom) {
-                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                }
-            }
-            
-            setTimeout(typeNext, speed);
-        } else {
-            // Done typing - set final content and remove cursor
-            element.innerHTML = finalHTML;
+    function processNextElement() {
+        if (currentIndex >= children.length) {
             if (callback) callback();
+            return;
+        }
+        
+        const node = children[currentIndex];
+        currentIndex++;
+        
+        // Check if this is a code block wrapper
+        if (node.nodeType === 1 && node.classList && node.classList.contains('code-block-wrapper')) {
+            // For code blocks: show container immediately, then type the code inside
+            const codeWrapper = node.cloneNode(true);
+            element.appendChild(codeWrapper);
+            
+            // Find the code element inside
+            const codeElement = codeWrapper.querySelector('code');
+            if (codeElement) {
+                const codeHTML = codeElement.innerHTML;
+                codeElement.innerHTML = '';
+                
+                // Add typing cursor
+                const cursor = document.createElement('span');
+                cursor.textContent = '|';
+                cursor.style.animation = 'blink 1s infinite';
+                cursor.style.marginLeft = '2px';
+                codeElement.appendChild(cursor);
+                
+                // Type code content character by character
+                let charIndex = 0;
+                const speed = 1; // 1ms per character
+                
+                function typeCodeChar() {
+                    if (charIndex < codeHTML.length) {
+                        codeElement.innerHTML = codeHTML.substring(0, charIndex + 1);
+                        codeElement.appendChild(cursor);
+                        charIndex++;
+                        
+                        // Auto-scroll if at bottom
+                        const messagesDiv = document.getElementById('chatMessages');
+                        if (messagesDiv) {
+                            const isAtBottom = messagesDiv.scrollHeight - messagesDiv.scrollTop - messagesDiv.clientHeight < 50;
+                            if (isAtBottom) {
+                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                            }
+                        }
+                        
+                        setTimeout(typeCodeChar, speed);
+                    } else {
+                        // Done with this code block
+                        codeElement.innerHTML = codeHTML;
+                        processNextElement();
+                    }
+                }
+                
+                typeCodeChar();
+            } else {
+                processNextElement();
+            }
+        } else {
+            // For non-code elements: type normally
+            if (node.nodeType === 3) {
+                // Text node
+                const text = node.textContent;
+                const textSpan = document.createElement('span');
+                element.appendChild(textSpan);
+                
+                let charIndex = 0;
+                const speed = 1;
+                
+                function typeTextChar() {
+                    if (charIndex < text.length) {
+                        textSpan.textContent += text[charIndex];
+                        charIndex++;
+                        
+                        const messagesDiv = document.getElementById('chatMessages');
+                        if (messagesDiv) {
+                            const isAtBottom = messagesDiv.scrollHeight - messagesDiv.scrollTop - messagesDiv.clientHeight < 50;
+                            if (isAtBottom) {
+                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                            }
+                        }
+                        
+                        setTimeout(typeTextChar, speed);
+                    } else {
+                        processNextElement();
+                    }
+                }
+                
+                typeTextChar();
+            } else if (node.nodeType === 1) {
+                // Element node (but not code block)
+                const clone = node.cloneNode(true);
+                element.appendChild(clone);
+                processNextElement();
+            } else {
+                processNextElement();
+            }
         }
     }
     
-    typeNext();
+    processNextElement();
 }
 
 // Apply syntax highlighting to code blocks using DOM manipulation

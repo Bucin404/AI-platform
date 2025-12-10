@@ -1,6 +1,7 @@
 """Chat routes."""
 from flask import render_template, jsonify, request, session, Response, stream_with_context
 from flask_login import login_required, current_user
+from flask_wtf.csrf import csrf
 from werkzeug.utils import secure_filename
 import os
 import json
@@ -412,6 +413,7 @@ def get_current_session():
 
 @chat_bp.route('/session/<int:session_id>/delete', methods=['DELETE', 'POST'])
 @login_required
+@csrf.exempt
 def delete_session(session_id):
     """Delete a conversation session."""
     try:
