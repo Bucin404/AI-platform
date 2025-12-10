@@ -4,13 +4,14 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
 import json
+import traceback
 from app.blueprints.chat import chat_bp
 from app.models.user import Message, ConversationSession
 from app.models.file_attachment import FileAttachment
 from app.services.model_service import get_model_response
 from app.utils.rate_limit import check_rate_limit
 from app.translations import get_all_translations
-from app import db
+from app import db, csrf
 from datetime import datetime, timedelta
 
 # File upload configuration
@@ -106,7 +107,7 @@ def send_message():
         return jsonify({'error': 'Message cannot be empty'}), 400
     
     # Check if model requires premium and user is free
-    premium_models = ['code', 'deepseek', 'document', 'llama', 'image', 'vicuna']
+    premium_models = ['code', 'deepseek', 'document', 'llama', 'image']
     if model_name in premium_models and not current_user.can_use_feature(model_name):
         return jsonify({
             'error': 'This feature requires Premium subscription',
@@ -127,8 +128,9 @@ def send_message():
     db.session.add(msg)
     db.session.commit()
     
-    # Get conversation context (ALL messages in session for full memory)
-    context_messages = conv_session.get_context_messages(limit=None)  # None = all messages
+    # Get conversation context (with token limit to avoid exceeding context window)
+    # Most models have 2048 token context, leave ~500 tokens for response
+    context_messages = conv_session.get_context_messages(limit=None, max_tokens=1500)
     
     # Build context for AI
     conversation_history = []
@@ -188,27 +190,16 @@ def stream_message():
     if not user_message:
         return jsonify({'error': 'Message cannot be empty'}), 400
     
-    # Check premium requirements
-    premium_models = ['code', 'deepseek', 'document', 'llama', 'image', 'vicuna']
+    # Check premium requirements (hermes/creative is free, removed from list)
+    premium_models = ['code', 'deepseek', 'document', 'llama', 'image']
     if model_name in premium_models and not current_user.can_use_feature(model_name):
         return jsonify({'error': 'This feature requires Premium subscription', 'upgrade_required': True}), 403
     
     # Get or create session
     conv_session = get_or_create_session(current_user.id)
     
-    # Save user message
-    msg = Message(
-        user_id=current_user.id,
-        session_id=conv_session.id,
-        role='user',
-        content=user_message,
-        model=model_name
-    )
-    db.session.add(msg)
-    db.session.commit()
-    
-    # Get conversation history
-    context_messages = conv_session.get_context_messages(limit=None)
+    # Get conversation history BEFORE saving message (faster)
+    context_messages = conv_session.get_context_messages(limit=None, max_tokens=1500)
     conversation_history = []
     for ctx_msg in context_messages:
         conversation_history.append({
@@ -220,10 +211,25 @@ def stream_message():
     @stream_with_context
     def generate():
         try:
+            # Send immediate start signal to show loading started
+            yield f"data: {json.dumps({'status': 'processing'})}\n\n"
+            
+            # Save user message in parallel (don't wait for commit)
+            msg = Message(
+                user_id=current_user.id,
+                session_id=conv_session.id,
+                role='user',
+                content=user_message,
+                model=model_name
+            )
+            db.session.add(msg)
+            db.session.commit()
+            
+            # Send model loading status
+            yield f"data: {json.dumps({'status': 'model_loading'})}\n\n"
+            
             full_response = []
             token_count = 0
-            
-            print(f"🚀 Starting streaming response for model: {model_name}")
             
             # Get streaming response from AI
             generator = get_model_response(
@@ -234,20 +240,17 @@ def stream_message():
                 stream=True
             )
             
-            print(f"📡 Got generator: {type(generator)}")
+            # Send generating status right before first token
+            yield f"data: {json.dumps({'status': 'generating'})}\n\n"
             
             for token in generator:
                 token_count += 1
-                print(f"🔤 Token {token_count}: {repr(token[:50])}")
                 full_response.append(token)
                 # Send token as SSE event
                 yield f"data: {json.dumps({'token': token})}\n\n"
             
-            print(f"✅ Streaming complete. Total tokens: {token_count}")
-            
             # Save complete response to database
             complete_response = ''.join(full_response)
-            print(f"💾 Saving response ({len(complete_response)} chars)")
             
             response_msg = Message(
                 user_id=current_user.id,
@@ -261,7 +264,6 @@ def stream_message():
             db.session.commit()
             
             # Send completion event
-            print(f"🏁 Sending done signal")
             yield f"data: {json.dumps({'done': True, 'message_id': response_msg.id, 'session_id': conv_session.id})}\n\n"
             
         except Exception as e:
@@ -407,6 +409,49 @@ def get_current_session():
         return jsonify({'session_id': session.id})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@chat_bp.route('/session/<int:session_id>/delete', methods=['DELETE', 'POST'])
+@login_required
+@csrf.exempt
+def delete_session(session_id):
+    """Delete a conversation session."""
+    try:
+        print(f"[DELETE] Attempting to delete session_id={session_id} for user_id={current_user.id}", flush=True)
+        
+        # First, check if session exists at all
+        conv_session = ConversationSession.query.filter_by(id=session_id).first()
+        print(f"[DELETE] Session query result: {conv_session}", flush=True)
+        
+        if not conv_session:
+            print(f"[DELETE] Session {session_id} not found in database", flush=True)
+            return jsonify({'error': 'Session not found'}), 404
+        
+        print(f"[DELETE] Session found: id={conv_session.id}, user_id={conv_session.user_id}", flush=True)
+        
+        # Verify ownership
+        if conv_session.user_id != current_user.id:
+            print(f"[DELETE] Access denied: session user_id={conv_session.user_id}, current user_id={current_user.id}", flush=True)
+            return jsonify({'error': 'Access denied'}), 403
+        
+        print(f"[DELETE] Deleting messages for session {session_id}", flush=True)
+        # Delete all messages in session
+        msg_count = Message.query.filter_by(session_id=session_id).delete()
+        print(f"[DELETE] Deleted {msg_count} messages", flush=True)
+        
+        print(f"[DELETE] Deleting session {session_id}", flush=True)
+        # Delete session
+        db.session.delete(conv_session)
+        db.session.commit()
+        print(f"[DELETE] Successfully deleted session {session_id}", flush=True)
+        
+        return jsonify({'message': 'Session deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"[DELETE] Exception deleting session {session_id}: {type(e).__name__}: {str(e)}", flush=True)
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'{type(e).__name__}: {str(e)}'}), 500
 
 
 @chat_bp.route('/models')

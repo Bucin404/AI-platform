@@ -1,10 +1,15 @@
 """Test model service functionality."""
 import pytest
+from unittest.mock import MagicMock, patch
 from app.services.model_service import (
     detect_content_type,
     select_model_for_content,
     get_model_response,
-    get_available_models
+    get_available_models,
+    MistralAdapter,
+    CodeLlamaAdapter,
+    Llama3Adapter,
+    HermesAdapter
 )
 
 
@@ -144,3 +149,146 @@ def test_get_available_models():
     deepseek = next(m for m in models if m['id'] == 'deepseek')
     assert 'use_case' in deepseek
     assert 'Coding' in deepseek['use_case']
+
+
+def test_streaming_with_empty_chunks():
+    """Test that streaming yields empty chunks and token counter increments."""
+    # Create a mock adapter
+    adapter = MistralAdapter()
+    adapter._is_loaded = True
+    
+    # Simulate llama-cpp-python streaming format with empty chunks
+    # Use side_effect to return a NEW generator each time
+    def mock_stream_generator_factory(*args, **kwargs):
+        # Only return generator if stream=True
+        if kwargs.get('stream', False):
+            def gen():
+                yield {'choices': [{'text': ''}]}  # Empty chunk
+                yield {'choices': [{'text': ''}]}  # Empty chunk
+                yield {'choices': [{'text': 'Hello'}]}  # Real token
+                yield {'choices': [{'text': ' '}]}  # Whitespace
+                yield {'choices': [{'text': 'World'}]}  # Real token
+                yield {'choices': [{'text': ''}]}  # Empty chunk
+            return gen()
+        else:
+            return {'choices': [{'text': 'mock'}]}
+    
+    # Mock the llama model - use side_effect to get fresh generator
+    mock_model = MagicMock()
+    mock_model.side_effect = mock_stream_generator_factory
+    adapter.model = mock_model
+    
+    # Generate streaming response
+    generator = adapter.generate("test prompt", stream=True)
+    
+    # Collect all tokens including empty ones
+    tokens = list(generator)
+    
+    # Verify that we got tokens (including empty ones)
+    # Note: First token is "Testing... " from the adapter's test mechanism
+    assert len(tokens) > 1, f"Should yield tokens even with empty chunks, got {len(tokens)}: {tokens}"
+    
+    # Verify the generator didn't skip empty chunks
+    # Remove the test token to check the actual stream
+    stream_tokens = tokens[1:]  # Skip "Testing... " 
+    assert any(t == '' for t in stream_tokens), "Should include empty string tokens"
+    assert any(t and t.strip() for t in stream_tokens), "Should include non-empty tokens"
+
+
+def test_streaming_with_only_empty_chunks_triggers_fallback():
+    """Test that streaming with only empty chunks triggers fallback."""
+    # Create a mock adapter
+    adapter = CodeLlamaAdapter()
+    adapter._is_loaded = True
+    
+    def mock_empty_stream_generator_factory(*args, **kwargs):
+        if kwargs.get('stream', False):
+            def gen():
+                for _ in range(5):
+                    yield {'choices': [{'text': ''}]}
+            return gen()
+        else:
+            return {'choices': [{'text': 'mock'}]}
+    
+    # Mock the llama model
+    mock_model = MagicMock()
+    mock_model.side_effect = mock_empty_stream_generator_factory
+    adapter.model = mock_model
+    
+    # Generate streaming response
+    generator = adapter.generate("test prompt", stream=True)
+    
+    # Collect all tokens
+    tokens = list(generator)
+    
+    # Should have empty tokens + fallback tokens
+    assert len(tokens) > 5, f"Should include fallback tokens when only empty chunks, got {len(tokens)}"
+    
+    # Check that fallback message is present
+    full_response = ''.join(tokens)
+    assert 'fallback' in full_response.lower() or 'model not loaded' in full_response.lower()
+
+
+def test_streaming_token_count_increments():
+    """Test that SSE token counter increments even with empty chunks."""
+    # This test simulates the SSE route behavior
+    adapter = Llama3Adapter()
+    adapter._is_loaded = True
+    
+    def mock_mixed_stream_generator_factory(*args, **kwargs):
+        if kwargs.get('stream', False):
+            def gen():
+                yield {'choices': [{'text': ''}]}  # Empty - should still count
+                yield {'choices': [{'text': 'Token'}]}  # Real token
+                yield {'choices': [{'text': ''}]}  # Empty - should still count
+            return gen()
+        else:
+            return {'choices': [{'text': 'mock'}]}
+    
+    mock_model = MagicMock()
+    mock_model.side_effect = mock_mixed_stream_generator_factory
+    adapter.model = mock_model
+    
+    # Simulate SSE route counting
+    generator = adapter.generate("test", stream=True)
+    token_count = 0
+    
+    for token in generator:
+        token_count += 1  # This is what the SSE route does
+    
+    # Should count all chunks, not just non-empty ones
+    assert token_count > 0, "Token count should be greater than 0"
+    # We expect at least 3 tokens (empty, real, empty)
+    assert token_count >= 3, f"Expected at least 3 tokens, got {token_count}"
+
+
+def test_hermes_streaming_with_whitespace():
+    """Test that Hermes adapter yields whitespace chunks."""
+    adapter = HermesAdapter()
+    adapter._is_loaded = True
+    
+    def mock_whitespace_stream_generator_factory(*args, **kwargs):
+        if kwargs.get('stream', False):
+            def gen():
+                yield {'choices': [{'text': 'Word'}]}
+                yield {'choices': [{'text': ' '}]}  # Whitespace should be yielded
+                yield {'choices': [{'text': 'Another'}]}
+                yield {'choices': [{'text': '  '}]}  # Multiple spaces
+            return gen()
+        else:
+            return {'choices': [{'text': 'mock'}]}
+    
+    mock_model = MagicMock()
+    mock_model.side_effect = mock_whitespace_stream_generator_factory
+    adapter.model = mock_model
+    
+    generator = adapter.generate("test", stream=True)
+    tokens = list(generator)
+    
+    # Check whitespace tokens are present
+    assert any(t.isspace() for t in tokens if t), "Should yield whitespace tokens"
+    
+    # Reconstruct and verify
+    full_text = ''.join(tokens)
+    assert 'Word' in full_text
+    assert 'Another' in full_text
