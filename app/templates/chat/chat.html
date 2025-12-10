@@ -1360,7 +1360,6 @@ function sendMessage() {
         }),
         signal: abortController.signal
     })
-    })
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -1644,7 +1643,7 @@ function applySyntaxHighlighting(element) {
             // Regex patterns
             const patterns = [
                 // Strings (orange) - must be first to avoid conflicts
-                {regex: /(['"`])[^\1]*?\1/, color: '#ce9178', type: 'string'},
+                {regex: /(['"`])(?:(?!\1).)*?\1/, color: '#ce9178', type: 'string'},
                 // Comments (green)
                 {regex: /#.*$|\/\/.*$|\/\*[\s\S]*?\*\//, color: '#6a9955', type: 'comment'},
                 // Keywords (blue)
