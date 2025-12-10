@@ -1318,9 +1318,7 @@ function sendMessage() {
     
     if (!message) return;
     
-    // Disable only input, keep button enabled for stop functionality
-    input.disabled = true;
-    
+    // OPTIMISTIC UI UPDATES - Show immediately for instant feedback
     // Remove welcome message on first message
     if (isFirstMessage) {
         document.querySelector('.welcome-message')?.remove();
@@ -1330,17 +1328,22 @@ function sendMessage() {
         updateSessionTitle(getSessionTitleFromMessage(message));
     }
     
-    // Add user message
+    // Add user message to UI immediately (don't wait for backend)
     addMessage('user', message, 'You');
+    
+    // Clear input immediately for instant feedback
     input.value = '';
     input.style.height = 'auto';
     
-    // Show typing indicator
+    // Show typing indicator immediately
     showTypingIndicator();
     
     // Set streaming state and update button (button stays enabled, icon changes)
     isStreaming = true;
     updateSendButton();
+    
+    // Now disable input (after clearing it)
+    input.disabled = true;
     
     // Create abort controller for this request
     abortController = new AbortController();

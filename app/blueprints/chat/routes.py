@@ -409,17 +409,15 @@ def get_current_session():
 def delete_session(session_id):
     """Delete a conversation session."""
     try:
-        # Clear any stale session state to prevent cache issues
-        db.session.expunge_all()
+        # Expire all cached objects to force fresh database queries
+        db.session.expire_all()
         
-        # Verify session belongs to user
-        conv_session = ConversationSession.query.filter_by(
-            id=session_id,
-            user_id=current_user.id
-        ).first()
+        # Get session directly by primary key (faster than filter_by)
+        conv_session = db.session.get(ConversationSession, session_id)
         
-        if not conv_session:
-            return jsonify({'error': 'Session not found'}), 404
+        # Verify session exists and belongs to user
+        if not conv_session or conv_session.user_id != current_user.id:
+            return jsonify({'error': 'Session not found or access denied'}), 404
         
         # Delete all messages in session
         Message.query.filter_by(session_id=session_id).delete()
@@ -431,6 +429,7 @@ def delete_session(session_id):
         return jsonify({'message': 'Session deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
+        print(f"Error deleting session {session_id}: {str(e)}", flush=True)
         return jsonify({'error': str(e)}), 500
 
 
