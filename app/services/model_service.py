@@ -70,7 +70,7 @@ class LlamaCppAdapter(ModelAdapter):
             try:
                 response = self.model(
                     prompt,
-                    max_tokens=256,  # Reduced from 512 for faster response
+                    max_tokens=512,  # Increased for complete responses
                     temperature=0.8,  # Slightly higher for faster sampling
                     top_p=0.9,  # Reduced from 0.95 for speed
                     top_k=40,  # Added for faster sampling
@@ -109,8 +109,8 @@ class GPT4AllAdapter(ModelAdapter):
                 self.model = Llama(
                     model_path=self.model_path,
                     n_ctx=1024,  # Reduced from 2048 for speed
-                    n_threads=8,  # Increased for parallel processing
-                    n_batch=512,  # Larger batch size
+                    n_threads=12,  # Increased for parallel processing
+                    n_batch=1024,  # Larger batch size for speed
                     n_gpu_layers=0,  # Set to 35+ if GPU available
                     use_mlock=True,  # Lock memory
                     use_mmap=True,  # Memory mapping
@@ -132,7 +132,7 @@ class GPT4AllAdapter(ModelAdapter):
             try:
                 response = self.model(
                     prompt,
-                    max_tokens=200,  # Reduced from 512 for faster response
+                    max_tokens=512,  # Increased for complete responses
                     temperature=0.8,  # Higher for faster sampling
                     top_p=0.9,  # Reduced for speed
                     top_k=40,  # Faster sampling
@@ -170,8 +170,8 @@ class DeepSeekAdapter(ModelAdapter):
                 self.model = Llama(
                     model_path=self.model_path,
                     n_ctx=2048,  # Reduced from 4096 for speed
-                    n_threads=8,  # Increased for parallel processing
-                    n_batch=512,  # Larger batch
+                    n_threads=12,  # Increased for parallel processing
+                    n_batch=1024,  # Larger batch for speed
                     n_gpu_layers=0,  # Set to 35+ if GPU available
                     use_mlock=True,
                     use_mmap=True,
@@ -233,8 +233,8 @@ class VicunaAdapter(ModelAdapter):
                 self.model = Llama(
                     model_path=self.model_path,
                     n_ctx=1024,  # Reduced from 2048 for speed
-                    n_threads=8,  # Increased for parallel processing
-                    n_batch=512,  # Larger batch
+                    n_threads=12,  # Increased for parallel processing
+                    n_batch=1024,  # Larger batch for speed
                     n_gpu_layers=0,  # Set to 35+ if GPU available
                     use_mlock=True,
                     use_mmap=True,
@@ -256,7 +256,7 @@ class VicunaAdapter(ModelAdapter):
             try:
                 response = self.model(
                     prompt,
-                    max_tokens=256,  # Reduced from 512 for speed
+                    max_tokens=512,  # Increased for complete responses
                     temperature=0.8,  # Higher for faster sampling
                     top_p=0.9,  # Reduced for speed
                     top_k=40,
@@ -296,8 +296,8 @@ class MistralAdapter(ModelAdapter):
                 self.model = Llama(
                     model_path=self.model_path,
                     n_ctx=2048,  # Optimal for general chat
-                    n_threads=8,  # Maximum parallel processing
-                    n_batch=512,  # Large batch for speed
+                    n_threads=12,  # Maximum parallel processing
+                    n_batch=1024,  # Large batch for speed
                     n_gpu_layers=0,  # Set to 35+ if GPU available
                     use_mlock=True,  # Lock memory for speed
                     use_mmap=True,  # Memory mapping
@@ -419,8 +419,8 @@ class CodeLlamaAdapter(ModelAdapter):
                 self.model = Llama(
                     model_path=self.model_path,
                     n_ctx=2048,  # Good for code context
-                    n_threads=8,  # Maximum parallel processing
-                    n_batch=512,  # Large batch for speed
+                    n_threads=12,  # Maximum parallel processing
+                    n_batch=1024,  # Large batch for speed
                     n_gpu_layers=0,  # Set to 35+ if GPU available
                     use_mlock=True,
                     use_mmap=True,
@@ -524,8 +524,8 @@ class Llama3Adapter(ModelAdapter):
                 self.model = Llama(
                     model_path=self.model_path,
                     n_ctx=2048,  # Optimal for documents
-                    n_threads=8,  # Maximum parallel processing
-                    n_batch=512,  # Large batch for speed
+                    n_threads=12,  # Maximum parallel processing
+                    n_batch=1024,  # Large batch for speed
                     n_gpu_layers=0,  # Set to 35+ if GPU available
                     use_mlock=True,
                     use_mmap=True,
@@ -629,8 +629,8 @@ class HermesAdapter(ModelAdapter):
                 self.model = Llama(
                     model_path=self.model_path,
                     n_ctx=2048,  # Good for conversations
-                    n_threads=8,  # Maximum parallel processing
-                    n_batch=512,  # Large batch for speed
+                    n_threads=12,  # Maximum parallel processing
+                    n_batch=1024,  # Large batch for speed
                     n_gpu_layers=0,  # Set to 35+ if GPU available
                     use_mlock=True,
                     use_mmap=True,

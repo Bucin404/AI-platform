@@ -407,25 +407,24 @@ def delete_session(session_id):
     """Delete a conversation session."""
     try:
         # Verify session belongs to user
-        session = ConversationSession.query.filter_by(
+        conv_session = ConversationSession.query.filter_by(
             id=session_id,
             user_id=current_user.id
         ).first()
         
-        if not session:
+        if not conv_session:
             return jsonify({'error': 'Session not found'}), 404
         
         # Delete all messages in session
         Message.query.filter_by(session_id=session_id).delete()
         
         # Delete session
-        db.session.delete(session)
+        db.session.delete(conv_session)
         db.session.commit()
         
-        return jsonify({'message': 'Session deleted successfully'})
+        return jsonify({'message': 'Session deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
         return jsonify({'error': str(e)}), 500
 
 

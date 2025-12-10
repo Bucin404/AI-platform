@@ -1460,9 +1460,12 @@ function sendMessage() {
                                 const rendered = renderMarkdown(fullResponse);
                                 bubbleElement.innerHTML = rendered;
                                 
-                                // Auto-scroll
+                                // Only auto-scroll if user is at bottom (allow free scrolling)
                                 const messagesDiv = document.getElementById('chatMessages');
-                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                                const isAtBottom = messagesDiv.scrollHeight - messagesDiv.scrollTop - messagesDiv.clientHeight < 50;
+                                if (isAtBottom) {
+                                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                                }
                             }
                         } catch (e) {
                             console.error('Error parsing SSE data:', e);
@@ -1606,10 +1609,13 @@ function typeMessage(element, htmlContent, callback) {
             
             index++;
             
-            // Auto-scroll
+            // Only auto-scroll if user is at bottom (allow free scrolling)
             const messagesDiv = document.getElementById('chatMessages');
             if (messagesDiv) {
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                const isAtBottom = messagesDiv.scrollHeight - messagesDiv.scrollTop - messagesDiv.clientHeight < 50;
+                if (isAtBottom) {
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
             }
             
             setTimeout(typeNext, speed);
@@ -1724,18 +1730,16 @@ function addMessage(role, content, sender) {
         const rendered = renderMarkdown(content);
         
         // Use streaming effect for AI responses - now displays formatted HTML
+        // Only auto-scroll if user is already at bottom
+        const isAtBottom = messagesDiv.scrollHeight - messagesDiv.scrollTop - messagesDiv.clientHeight < 50;
+        
         typeMessage(bubble, rendered, () => {
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            if (isAtBottom) {
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
         });
         
-        // Auto-scroll while typing
-        const scrollInterval = setInterval(() => {
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }, 100);
-        
-        setTimeout(() => {
-            clearInterval(scrollInterval);
-        }, 3000);
+        // No forced scrolling - let user scroll freely
     }
 }
 
