@@ -1401,9 +1401,22 @@ function sendMessage() {
                         try {
                             const data = JSON.parse(line.slice(6));
                             
-                            // Handle processing status - show immediate feedback
+                            // Handle status updates - show immediate feedback
                             if (data.status === 'processing') {
-                                // Show typing indicator faster
+                                // Initial status - show typing indicator
+                                if (!document.querySelector('.typing-indicator')) {
+                                    showTypingIndicator();
+                                }
+                                continue;
+                            }
+                            
+                            if (data.status === 'model_loading') {
+                                // Model is loading - keep showing typing indicator
+                                continue;
+                            }
+                            
+                            if (data.status === 'generating') {
+                                // About to start generating - ensure typing indicator visible
                                 if (!document.querySelector('.typing-indicator')) {
                                     showTypingIndicator();
                                 }

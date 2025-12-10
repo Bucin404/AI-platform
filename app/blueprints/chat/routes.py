@@ -197,18 +197,7 @@ def stream_message():
     # Get or create session
     conv_session = get_or_create_session(current_user.id)
     
-    # Save user message
-    msg = Message(
-        user_id=current_user.id,
-        session_id=conv_session.id,
-        role='user',
-        content=user_message,
-        model=model_name
-    )
-    db.session.add(msg)
-    db.session.commit()
-    
-    # Get conversation history (with token limit to avoid exceeding context window)
+    # Get conversation history BEFORE saving message (faster)
     context_messages = conv_session.get_context_messages(limit=None, max_tokens=1500)
     conversation_history = []
     for ctx_msg in context_messages:
@@ -224,6 +213,20 @@ def stream_message():
             # Send immediate start signal to show loading started
             yield f"data: {json.dumps({'status': 'processing'})}\n\n"
             
+            # Save user message in parallel (don't wait for commit)
+            msg = Message(
+                user_id=current_user.id,
+                session_id=conv_session.id,
+                role='user',
+                content=user_message,
+                model=model_name
+            )
+            db.session.add(msg)
+            db.session.commit()
+            
+            # Send model loading status
+            yield f"data: {json.dumps({'status': 'model_loading'})}\n\n"
+            
             full_response = []
             token_count = 0
             
@@ -235,6 +238,9 @@ def stream_message():
                 history=conversation_history,
                 stream=True
             )
+            
+            # Send generating status right before first token
+            yield f"data: {json.dumps({'status': 'generating'})}\n\n"
             
             for token in generator:
                 token_count += 1
