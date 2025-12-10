@@ -1,17 +1,17 @@
 """Chat routes."""
 from flask import render_template, jsonify, request, session, Response, stream_with_context
 from flask_login import login_required, current_user
-from flask_wtf.csrf import csrf
 from werkzeug.utils import secure_filename
 import os
 import json
+import traceback
 from app.blueprints.chat import chat_bp
 from app.models.user import Message, ConversationSession
 from app.models.file_attachment import FileAttachment
 from app.services.model_service import get_model_response
 from app.utils.rate_limit import check_rate_limit
 from app.translations import get_all_translations
-from app import db
+from app import db, csrf
 from datetime import datetime, timedelta
 
 # File upload configuration
