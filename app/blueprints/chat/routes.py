@@ -415,28 +415,41 @@ def get_current_session():
 def delete_session(session_id):
     """Delete a conversation session."""
     try:
-        # Expire all cached objects to force fresh database queries
-        db.session.expire_all()
+        print(f"[DELETE] Attempting to delete session_id={session_id} for user_id={current_user.id}", flush=True)
         
-        # Get session directly by primary key (faster than filter_by)
-        conv_session = db.session.get(ConversationSession, session_id)
+        # First, check if session exists at all
+        conv_session = ConversationSession.query.filter_by(id=session_id).first()
+        print(f"[DELETE] Session query result: {conv_session}", flush=True)
         
-        # Verify session exists and belongs to user
-        if not conv_session or conv_session.user_id != current_user.id:
-            return jsonify({'error': 'Session not found or access denied'}), 404
+        if not conv_session:
+            print(f"[DELETE] Session {session_id} not found in database", flush=True)
+            return jsonify({'error': 'Session not found'}), 404
         
+        print(f"[DELETE] Session found: id={conv_session.id}, user_id={conv_session.user_id}", flush=True)
+        
+        # Verify ownership
+        if conv_session.user_id != current_user.id:
+            print(f"[DELETE] Access denied: session user_id={conv_session.user_id}, current user_id={current_user.id}", flush=True)
+            return jsonify({'error': 'Access denied'}), 403
+        
+        print(f"[DELETE] Deleting messages for session {session_id}", flush=True)
         # Delete all messages in session
-        Message.query.filter_by(session_id=session_id).delete()
+        msg_count = Message.query.filter_by(session_id=session_id).delete()
+        print(f"[DELETE] Deleted {msg_count} messages", flush=True)
         
+        print(f"[DELETE] Deleting session {session_id}", flush=True)
         # Delete session
         db.session.delete(conv_session)
         db.session.commit()
+        print(f"[DELETE] Successfully deleted session {session_id}", flush=True)
         
         return jsonify({'message': 'Session deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        print(f"Error deleting session {session_id}: {str(e)}", flush=True)
-        return jsonify({'error': str(e)}), 500
+        print(f"[DELETE] Exception deleting session {session_id}: {type(e).__name__}: {str(e)}", flush=True)
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'{type(e).__name__}: {str(e)}'}), 500
 
 
 @chat_bp.route('/models')
