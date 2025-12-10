@@ -409,6 +409,9 @@ def get_current_session():
 def delete_session(session_id):
     """Delete a conversation session."""
     try:
+        # Clear any stale session state to prevent cache issues
+        db.session.expunge_all()
+        
         # Verify session belongs to user
         conv_session = ConversationSession.query.filter_by(
             id=session_id,

@@ -1318,8 +1318,7 @@ function sendMessage() {
     
     if (!message) return;
     
-    // Disable input
-    button.disabled = true;
+    // Disable only input, keep button enabled for stop functionality
     input.disabled = true;
     
     // Remove welcome message on first message
@@ -1339,7 +1338,7 @@ function sendMessage() {
     // Show typing indicator
     showTypingIndicator();
     
-    // Set streaming state and update button
+    // Set streaming state and update button (button stays enabled, icon changes)
     isStreaming = true;
     updateSendButton();
     
