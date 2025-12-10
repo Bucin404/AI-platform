@@ -1314,6 +1314,10 @@ def get_model_response(prompt, model_name='auto', user=None, history=None, strea
     """
     from flask import current_app
     
+    # Check if user is asking to continue (lanjutkan)
+    continue_keywords = ['lanjutkan', 'lanjut', 'continue', 'teruskan', 'sambung']
+    is_continuation = any(keyword in prompt.lower() for keyword in continue_keywords)
+    
     # Build context from history if provided with token safety
     if history:
         # Include messages for context, but be mindful of token limits
@@ -1354,7 +1358,23 @@ def get_model_response(prompt, model_name='auto', user=None, history=None, strea
         # Build full conversation history with current prompt
         if conversation_context:
             context = "\n".join(conversation_context)
-            full_prompt = f"{context}\nUser: {prompt}\nAssistant:"
+            
+            # If user asks to continue, append last assistant response to continue from
+            if is_continuation and conversation_context:
+                # Find last assistant message
+                last_assistant_msg = None
+                for msg in reversed(history):
+                    if msg.get('role') == 'assistant':
+                        last_assistant_msg = msg.get('content', '')
+                        break
+                
+                if last_assistant_msg:
+                    # Continue from where it left off
+                    full_prompt = f"{context}\nAssistant: {last_assistant_msg}"
+                else:
+                    full_prompt = f"{context}\nUser: {prompt}\nAssistant:"
+            else:
+                full_prompt = f"{context}\nUser: {prompt}\nAssistant:"
         else:
             full_prompt = f"User: {prompt}\nAssistant:"
     else:

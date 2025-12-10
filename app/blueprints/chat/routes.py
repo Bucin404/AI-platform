@@ -221,6 +221,9 @@ def stream_message():
     @stream_with_context
     def generate():
         try:
+            # Send immediate start signal to show loading started
+            yield f"data: {json.dumps({'status': 'processing'})}\n\n"
+            
             full_response = []
             token_count = 0
             

@@ -1399,6 +1399,15 @@ function sendMessage() {
                         try {
                             const data = JSON.parse(line.slice(6));
                             
+                            // Handle processing status - show immediate feedback
+                            if (data.status === 'processing') {
+                                // Show typing indicator faster
+                                if (!document.querySelector('.typing-indicator')) {
+                                    showTypingIndicator();
+                                }
+                                continue;
+                            }
+                            
                             if (data.error) {
                                 console.error('❌ Error from server:', data.error);
                                 removeTypingIndicator();
