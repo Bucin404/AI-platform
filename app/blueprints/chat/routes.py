@@ -410,7 +410,7 @@ def get_current_session():
         return jsonify({'error': str(e)}), 500
 
 
-@chat_bp.route('/session/<int:session_id>/delete', methods=['DELETE'])
+@chat_bp.route('/session/<int:session_id>/delete', methods=['DELETE', 'POST'])
 @login_required
 def delete_session(session_id):
     """Delete a conversation session."""

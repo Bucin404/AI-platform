@@ -1964,7 +1964,10 @@ async function deleteSession(sessionId) {
     
     try {
         const response = await fetch(`/chat/session/${sessionId}/delete`, {
-            method: 'DELETE'
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
         
         if (response.ok) {
@@ -1976,11 +1979,12 @@ async function deleteSession(sessionId) {
                 await loadSessions();
             }
         } else {
-            alert('Failed to delete session');
+            const data = await response.json().catch(() => ({}));
+            alert('Failed to delete session: ' + (data.error || 'Unknown error'));
         }
     } catch (error) {
         console.error('Error deleting session:', error);
-        alert('Failed to delete session');
+        alert('Failed to delete session: ' + error.message);
     }
 }
 
